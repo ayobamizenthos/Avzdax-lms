@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f6f6f7;
+  --color-surface: #ffffff;
+  --color-ink: #0a0b0d;
+  --color-ink-soft: #2b2f36;
+  --color-muted: #5b5f66;
+  --color-line: #ececee;
+  --color-line-strong: #dedfe2;
+  --color-brand: #111318;
+  --color-brand-deep: #000000;
+  --color-brand-tint: #eef0f2;
+  --color-brand-ink: #ffffff;
+  --color-gold: #111318;
+  --color-gold-tint: #eef0f2;
+  --color-danger: #b3261e;
+  --color-danger-tint: #fbeceb;
+  --color-info: #2b2f36;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-card: 0 1px 2px rgba(16, 18, 29, 0.05), 0 6px 20px -10px rgba(16, 18, 29, 0.1);
+  --shadow-float: 0 12px 40px -16px rgba(16, 18, 29, 0.22);
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-brand) 22%, transparent);
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .grain {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(22, 24, 29, 0.045) 1px,
+      transparent 0
+    );
+    background-size: 22px 22px;
+  }
+}
+
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: fade-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
