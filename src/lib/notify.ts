@@ -43,3 +43,9 @@ export async function studentsInCourse(courseId: string) {
     .eq("status", "active");
   return (data ?? []).map((row) => row.student_id);
 }
+
+export async function adminIds() {
+  const admin = createAdminClient();
+  const { data } = await admin.from("profiles").select("id").eq("role", "admin");
+  return (data ?? []).map((row) => row.id);
+}

@@ -169,22 +169,36 @@ export function NotificationBell({
                 const body = (
                   <div
                     className={cn(
-                      "flex gap-3 px-4 py-3 transition-colors hover:bg-paper",
-                      !item.read_at && "bg-brand-tint/40"
+                      "flex gap-3 px-4 py-3 transition-colors",
+                      item.read_at
+                        ? "bg-surface hover:bg-paper"
+                        : "bg-brand-tint hover:brightness-95"
                     )}
                   >
                     <span
                       className={cn(
                         "mt-1.5 size-2 shrink-0 rounded-full",
-                        item.read_at ? "bg-transparent" : "bg-brand"
+                        item.read_at ? "bg-transparent" : "bg-ink"
                       )}
                     />
                     <span className="min-w-0">
-                      <span className="block text-sm font-medium text-ink">
+                      <span
+                        className={cn(
+                          "block text-sm",
+                          item.read_at
+                            ? "font-medium text-ink-soft"
+                            : "font-semibold text-ink"
+                        )}
+                      >
                         {item.title}
                       </span>
                       {item.body ? (
-                        <span className="mt-0.5 block text-sm text-ink-soft">
+                        <span
+                          className={cn(
+                            "mt-0.5 block text-sm",
+                            item.read_at ? "text-muted" : "text-ink-soft"
+                          )}
+                        >
                           {item.body}
                         </span>
                       ) : null}

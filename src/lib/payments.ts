@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { adminIds, notify } from "@/lib/notify";
 
 type PaymentRecord = {
   reference: string;
@@ -11,6 +12,13 @@ type PaymentRecord = {
 
 export async function recordPayment(payment: PaymentRecord) {
   const admin = createAdminClient();
+
+  const { data: existing } = await admin
+    .from("payments")
+    .select("id")
+    .eq("reference", payment.reference)
+    .maybeSingle();
+
   await admin.from("payments").upsert(
     {
       reference: payment.reference,
@@ -23,4 +31,14 @@ export async function recordPayment(payment: PaymentRecord) {
     },
     { onConflict: "reference" }
   );
+
+  if (existing) return;
+
+  const planLabel = payment.plan === "deposit" ? "deposit" : "full payment";
+  await notify({
+    recipientIds: await adminIds(),
+    title: "Payment received",
+    body: `${payment.fullName ?? payment.email} paid ₦${payment.amountNaira.toLocaleString()} (${planLabel})`,
+    href: "/admin/payments",
+  });
 }
