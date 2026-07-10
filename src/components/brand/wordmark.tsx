@@ -2,9 +2,11 @@ import { cn } from "@/lib/cn";
 
 export function Wordmark({
   tone = "ink",
+  size = "md",
   className,
 }: {
   tone?: "ink" | "paper";
+  size?: "sm" | "md";
   className?: string;
 }) {
   return (
@@ -13,13 +15,17 @@ export function Wordmark({
         src="/avzdax-logo.png"
         alt="Avzdax"
         className={cn(
-          "h-7 w-auto object-contain",
+          "w-auto object-contain",
+          size === "sm" ? "h-5" : "h-7",
           tone === "ink" && "[filter:brightness(0)]"
         )}
       />
       <span
         className={cn(
-          "pl-[0.28em] text-[0.6rem] font-semibold uppercase tracking-[0.42em]",
+          "font-semibold uppercase",
+          size === "sm"
+            ? "pl-[0.24em] text-[0.5rem] tracking-[0.34em]"
+            : "pl-[0.28em] text-[0.6rem] tracking-[0.42em]",
           tone === "paper" ? "text-white/60" : "text-muted"
         )}
       >

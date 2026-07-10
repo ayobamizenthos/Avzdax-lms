@@ -12,7 +12,7 @@ export default function PayPage() {
   return (
     <div className="min-h-dvh bg-paper px-5 py-12 sm:py-16">
       <div className="mx-auto w-full max-w-lg animate-rise">
-        <div className="mb-8 flex justify-center">
+        <div className="mb-8 flex justify-start sm:justify-center">
           <Wordmark />
         </div>
 

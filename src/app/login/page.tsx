@@ -21,7 +21,10 @@ export default async function LoginPage({
 }) {
   const { next } = await searchParams;
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
+    <div className="relative grid min-h-dvh lg:grid-cols-[1.05fr_1fr]">
+      <div className="absolute left-5 top-5 z-10 lg:hidden">
+        <Wordmark size="sm" />
+      </div>
       <aside className="relative hidden overflow-hidden bg-brand-deep px-12 py-14 lg:flex lg:flex-col lg:justify-between">
         <div className="grain absolute inset-0 opacity-40" />
         <div
@@ -56,14 +59,8 @@ export default async function LoginPage({
 
       <main className="flex items-center justify-center px-6 py-16 sm:px-12">
         <div className="w-full max-w-sm animate-rise">
-          <div className="lg:hidden">
-            <Wordmark />
-          </div>
-          <div className="mt-10 lg:mt-0">
+          <div>
             <h2 className="font-display text-2xl text-ink">Welcome back</h2>
-            <p className="mt-1.5 text-sm text-muted">
-              Sign in with the details sent to your email.
-            </p>
           </div>
 
           <div className="mt-8">
