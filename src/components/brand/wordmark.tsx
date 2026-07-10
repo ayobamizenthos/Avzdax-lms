@@ -8,36 +8,22 @@ export function Wordmark({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
+    <span className={cn("inline-flex flex-col items-center gap-1.5", className)}>
+      <img
+        src="/avzdax-logo.png"
+        alt="Avzdax"
+        className={cn(
+          "h-7 w-auto object-contain",
+          tone === "ink" && "[filter:brightness(0)]"
+        )}
+      />
       <span
         className={cn(
-          "grid size-9 place-items-center rounded-md",
-          tone === "paper" ? "bg-white/10" : "bg-brand"
+          "pl-[0.28em] text-[0.6rem] font-semibold uppercase tracking-[0.42em]",
+          tone === "paper" ? "text-white/60" : "text-muted"
         )}
       >
-        <img
-          src="/avzdax-logoX.png"
-          alt="Avzdax"
-          className="size-6 object-contain"
-        />
-      </span>
-      <span className="flex flex-col leading-none">
-        <span
-          className={cn(
-            "font-display text-[1.05rem] font-semibold tracking-tight",
-            tone === "paper" ? "text-white" : "text-ink"
-          )}
-        >
-          Avzdax
-        </span>
-        <span
-          className={cn(
-            "text-[0.62rem] font-medium uppercase tracking-[0.22em]",
-            tone === "paper" ? "text-white/55" : "text-muted"
-          )}
-        >
-          Academy
-        </span>
+        Academy
       </span>
     </span>
   );
