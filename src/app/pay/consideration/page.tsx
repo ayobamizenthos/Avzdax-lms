@@ -26,8 +26,7 @@ export default function ConsiderationPage() {
             </h1>
             <p className="mt-2 text-sm text-ink-soft">
               After a closer look at your application, the academy is offering you
-              a consideration place in the cohort. Secure it with the ₦35,000
-              consideration fee.
+              a consideration place in the cohort.
             </p>
           </div>
 

@@ -16,7 +16,7 @@ function SubmitButton() {
         <Loader2 className="size-4 animate-spin" />
       ) : (
         <>
-          Pay ₦35,000 consideration fee
+          Continue to payment
           <ArrowRight className="size-4" />
         </>
       )}
