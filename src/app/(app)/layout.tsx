@@ -9,6 +9,7 @@ import { AccountMenu } from "@/components/app/account-menu";
 import { NotificationBell } from "@/components/app/notification-bell";
 import { MobileNav } from "@/components/app/mobile-nav";
 import { RealtimeRefresh } from "@/components/app/realtime-refresh";
+import { NavigationProgress } from "@/components/app/navigation-progress";
 
 export default async function AppLayout({
   children,
@@ -29,6 +30,7 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-dvh bg-paper">
       <RealtimeRefresh />
+      <NavigationProgress />
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col border-r border-line bg-surface px-4 py-6 lg:flex">
         <div className="px-2">
           <Wordmark />

@@ -1,10 +1,6 @@
-import { TopProgress } from "@/components/app/top-progress";
-
 export default function Loading() {
   return (
-    <>
-      <TopProgress />
-      <div className="space-y-8">
+    <div className="space-y-8">
         <div className="space-y-3">
           <div className="shimmer h-3 w-28 rounded bg-line-strong" />
           <div className="shimmer h-9 w-72 max-w-full rounded bg-line-strong" />
@@ -36,6 +32,5 @@ export default function Loading() {
           </div>
         </div>
       </div>
-    </>
   );
 }
