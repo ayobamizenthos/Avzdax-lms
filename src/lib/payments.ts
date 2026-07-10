@@ -34,7 +34,12 @@ export async function recordPayment(payment: PaymentRecord) {
 
   if (existing) return;
 
-  const planLabel = payment.plan === "deposit" ? "deposit" : "full payment";
+  const planLabels: Record<string, string> = {
+    full: "full payment",
+    deposit: "deposit",
+    consideration: "consideration fee",
+  };
+  const planLabel = planLabels[payment.plan ?? ""] ?? "payment";
   await notify({
     recipientIds: await adminIds(),
     title: "Payment received",

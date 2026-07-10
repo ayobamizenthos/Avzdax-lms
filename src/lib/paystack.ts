@@ -68,6 +68,7 @@ export async function verifyTransaction(
 export const PLANS = {
   full: { label: "Full payment", amountKobo: 6_500_000, naira: 65_000 },
   deposit: { label: "Commitment deposit", amountKobo: 2_500_000, naira: 25_000 },
+  consideration: { label: "Consideration fee", amountKobo: 3_500_000, naira: 35_000 },
 } as const;
 
 export type PlanKey = keyof typeof PLANS;
