@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { NavLinkStatus } from "@/components/app/nav-link-status";
 import { Wordmark } from "@/components/brand/wordmark";
 import { signOut } from "@/app/(app)/actions";
 import { navFor } from "@/lib/navigation";
@@ -74,6 +75,7 @@ export function MobileNav({
                   >
                     <item.icon className="size-[1.15rem]" strokeWidth={1.9} />
                     {item.label}
+                    <NavLinkStatus />
                   </Link>
                 );
               })}

@@ -38,7 +38,6 @@ export function UserActions({
       >
         <option value="student">Student</option>
         <option value="tutor">Tutor</option>
-        <option value="admin">Admin</option>
       </Select>
 
       {role === "student" ? (

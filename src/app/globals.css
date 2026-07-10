@@ -82,3 +82,49 @@ body {
 .animate-rise {
   animation: fade-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+@keyframes nav-progress {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  40% {
+    width: 45%;
+  }
+  80% {
+    width: 78%;
+  }
+  100% {
+    width: 92%;
+    opacity: 1;
+  }
+}
+
+.nav-progress-bar {
+  animation: nav-progress 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(10, 11, 13, 0.06),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}

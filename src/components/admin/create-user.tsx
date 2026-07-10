@@ -116,7 +116,6 @@ export function CreateUser({
             <Select name="role" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="student">Student</option>
               <option value="tutor">Tutor</option>
-              <option value="admin">Administrator</option>
             </Select>
           </Field>
           <Field label="Temporary password" hint="Leave blank to auto-generate.">

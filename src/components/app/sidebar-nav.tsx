@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/cn";
 import { navFor } from "@/lib/navigation";
+import { NavLinkStatus } from "@/components/app/nav-link-status";
 import type { Role } from "@/lib/session";
 
 export function SidebarNav({ role }: { role: Role }) {
@@ -40,6 +41,7 @@ export function SidebarNav({ role }: { role: Role }) {
               strokeWidth={1.9}
             />
             {item.label}
+            <NavLinkStatus />
           </Link>
         );
       })}
