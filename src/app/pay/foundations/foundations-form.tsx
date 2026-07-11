@@ -24,14 +24,14 @@ function SubmitButton() {
   );
 }
 
-export function ConsiderationForm() {
+export function FoundationsForm() {
   const [state, formAction] = useActionState<PayState, FormData>(startPayment, {
     error: null,
   });
 
   return (
     <form action={formAction} className="space-y-5">
-      <input type="hidden" name="plan" value="consideration" />
+      <input type="hidden" name="plan" value="foundations" />
 
       <div>
         <Label htmlFor="full_name">Full name</Label>

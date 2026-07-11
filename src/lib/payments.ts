@@ -37,7 +37,7 @@ export async function recordPayment(payment: PaymentRecord) {
   const planLabels: Record<string, string> = {
     full: "full payment",
     deposit: "deposit",
-    consideration: "consideration fee",
+    foundations: "Foundations Programme",
   };
   const planLabel = planLabels[payment.plan ?? ""] ?? "payment";
   await notify({
