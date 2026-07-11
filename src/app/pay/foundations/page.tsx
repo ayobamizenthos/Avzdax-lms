@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sparkles } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 
 import { Wordmark } from "@/components/brand/wordmark";
 import { FoundationsForm } from "./foundations-form";
@@ -36,7 +36,7 @@ export default function FoundationsPage() {
           </div>
 
           <div className="my-6 flex items-center justify-center gap-2 rounded-sm bg-gold-tint px-4 py-2.5 text-sm text-gold">
-            <Sparkles className="size-4" />
+            <CalendarClock className="size-4" />
             Programme fee ₦35,000, exclusive to applicants from this cohort.
           </div>
 
