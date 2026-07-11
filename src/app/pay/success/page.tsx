@@ -48,7 +48,12 @@ export default async function PaymentSuccessPage({
     <div className="grid min-h-dvh place-items-center bg-paper px-5 py-12">
       <div className="w-full max-w-md animate-rise">
         <div className="mb-8 flex justify-start sm:justify-center">
-          <Wordmark />
+          <div className="sm:hidden">
+            <Wordmark size="sm" />
+          </div>
+          <div className="hidden sm:block">
+            <Wordmark />
+          </div>
         </div>
 
         <div className="rounded-xl bg-surface p-8 text-center shadow-card">

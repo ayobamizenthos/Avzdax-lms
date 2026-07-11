@@ -13,7 +13,12 @@ export default function ConsiderationPage() {
     <div className="min-h-dvh bg-paper px-5 py-12 sm:py-16">
       <div className="mx-auto w-full max-w-lg animate-rise">
         <div className="mb-8 flex justify-start sm:justify-center">
-          <Wordmark />
+          <div className="sm:hidden">
+            <Wordmark size="sm" />
+          </div>
+          <div className="hidden sm:block">
+            <Wordmark />
+          </div>
         </div>
 
         <div className="rounded-xl bg-surface p-6 shadow-card sm:p-8">
