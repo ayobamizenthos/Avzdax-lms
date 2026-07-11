@@ -1,6 +1,5 @@
 import {
   BookOpen,
-  GraduationCap,
   LayoutDashboard,
   LibraryBig,
   ClipboardCheck,
@@ -56,10 +55,4 @@ export const roleLabel: Record<Role, string> = {
   student: "Student",
   tutor: "Tutor",
   admin: "Administrator",
-};
-
-export const roleIcon: Record<Role, LucideIcon> = {
-  student: GraduationCap,
-  tutor: BookOpen,
-  admin: Users,
 };
