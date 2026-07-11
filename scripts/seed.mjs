@@ -46,6 +46,7 @@ const staff = [
   { key: "cyber", email: "tutor.security@avzdax.com", full_name: "Emeka Nwosu", role: "tutor" },
   { key: "backend", email: "tutor.backend@avzdax.com", full_name: "Tunde Adeyemi", role: "tutor" },
   { key: "data", email: "tutor.data@avzdax.com", full_name: "Fatima Bello", role: "tutor" },
+  { key: "foundations", email: "tutor.foundations@avzdax.com", full_name: "Chidi Okonkwo", role: "tutor" },
 ];
 
 async function upsertUser(person) {
@@ -261,6 +262,139 @@ const courses = [
       },
     ],
   },
+  {
+    tutorKey: "foundations",
+    title: "AVZDAX Foundations Programme",
+    summary:
+      "A practical, instructor-led pathway that builds the thinking, coding and problem-solving foundations to launch a career in technology.",
+    modules: [
+      {
+        title: "Critical and Systems Thinking",
+        lessons: [
+          { title: "Thinking in systems", youtube_id: "oXlwWbU8l2o", body: "See problems as connected parts, feedback loops and outcomes rather than isolated events." },
+          { title: "Breaking problems down", youtube_id: "bMknfKXIFA8", body: "Decompose a large, vague problem into small, solvable pieces." },
+        ],
+        quiz: {
+          title: "Critical and Systems Thinking",
+          questions: [
+            { prompt: "What best describes systems thinking?", options: ["Studying parts in isolation", "Understanding how parts interact as a whole", "Memorising facts", "Writing faster code"], correct_index: 1 },
+            { prompt: "What is a feedback loop?", options: ["A one-time event", "When an output feeds back to influence the system", "A syntax error", "A type of database"], correct_index: 1 },
+            { prompt: "Decomposition means…", options: ["Deleting code", "Breaking a problem into smaller parts", "Rewriting from scratch", "Ignoring edge cases"], correct_index: 1 },
+            { prompt: "First-principles thinking asks you to…", options: ["Copy the popular solution", "Reason up from basic truths", "Skip the analysis", "Trust every assumption"], correct_index: 1 },
+            { prompt: "Root-cause analysis aims to find…", options: ["Someone to blame", "The underlying cause, not just symptoms", "A faster CPU", "A new framework"], correct_index: 1 },
+            { prompt: "A sign of a good problem definition is that it is…", options: ["Vague", "Clear, specific and measurable", "Without constraints", "Without goals"], correct_index: 1 },
+            { prompt: "Trade-off thinking means…", options: ["There is always one perfect answer", "Weighing the costs and benefits of options", "Avoiding decisions", "Choosing randomly"], correct_index: 1 },
+            { prompt: "Why map assumptions before solving?", options: ["To look busy", "Wrong assumptions lead to wrong solutions", "To write more code", "It is never useful"], correct_index: 1 },
+          ],
+        },
+      },
+      {
+        title: "Programming Fundamentals",
+        lessons: [
+          { title: "How programs run", youtube_id: "OcycT1Jwsns", body: "Variables, memory and the flow of execution from top to bottom." },
+          { title: "Control flow and functions", youtube_id: "i_LwzRVP7bg", body: "Make decisions, repeat work, and package logic into reusable functions." },
+        ],
+        quiz: {
+          title: "Programming Fundamentals",
+          questions: [
+            { prompt: "A variable is…", options: ["A fixed number", "A named place to store a value", "A loop", "A file"], correct_index: 1 },
+            { prompt: "What does a loop do?", options: ["Store data", "Repeat a block of code", "Delete files", "Encrypt data"], correct_index: 1 },
+            { prompt: "A function is best described as…", options: ["A reusable block of logic", "A colour", "A database table", "A network port"], correct_index: 0 },
+            { prompt: "A boolean value is…", options: ["Any number", "True or false", "A string", "A list"], correct_index: 1 },
+            { prompt: "An array or list is used to…", options: ["Store an ordered collection of items", "Encrypt passwords", "Style a page", "Send email"], correct_index: 0 },
+            { prompt: "What does debugging mean?", options: ["Adding features", "Finding and fixing errors", "Deleting the app", "Writing docs"], correct_index: 1 },
+            { prompt: "An if-statement controls…", options: ["Colours", "Which code runs based on a condition", "File size", "Network speed"], correct_index: 1 },
+            { prompt: "Why write functions instead of repeating code?", options: ["To reuse logic and avoid duplication", "To slow the program", "To use more memory", "No reason"], correct_index: 0 },
+          ],
+        },
+        assignment: {
+          title: "Build a small program",
+          instructions: "Write a small program that solves a real everyday task (a calculator, a to-do list, or similar) and submit a link to your code.",
+        },
+      },
+      {
+        title: "Data and AI Fundamentals",
+        lessons: [
+          { title: "What data really is", youtube_id: "gSSsZReIFRk", body: "Rows, columns, types and how raw data becomes insight." },
+          { title: "How AI models learn", youtube_id: "U_P23SqJaDc", body: "A plain-English introduction to how models find patterns in data." },
+        ],
+        quiz: {
+          title: "Data and AI Fundamentals",
+          questions: [
+            { prompt: "Structured data is usually organised as…", options: ["Rows and columns", "Random text", "Images only", "Sound"], correct_index: 0 },
+            { prompt: "What is a dataset?", options: ["A single number", "A collection of related data", "A programming language", "A firewall"], correct_index: 1 },
+            { prompt: "Training a model means…", options: ["Deleting data", "Letting it learn patterns from examples", "Encrypting data", "Printing data"], correct_index: 1 },
+            { prompt: "A feature in machine learning is…", options: ["An input variable the model uses", "A bug", "A web page", "A password"], correct_index: 0 },
+            { prompt: "Why split data into train and test sets?", options: ["To check the model on unseen data", "To save disk space", "To hide data", "No reason"], correct_index: 0 },
+            { prompt: "Overfitting means…", options: ["The model memorises training data and fails on new data", "The model is too small", "The data is encrypted", "The code is slow"], correct_index: 0 },
+            { prompt: "Which is an example of AI?", options: ["A spam filter that learns", "A paper notebook", "A power cable", "A stapler"], correct_index: 0 },
+            { prompt: "Good data quality means data that is…", options: ["Accurate, complete and relevant", "As much as possible regardless of errors", "Only images", "Only encrypted"], correct_index: 0 },
+          ],
+        },
+      },
+      {
+        title: "Cybersecurity Foundations",
+        lessons: [
+          { title: "Staying safe online", youtube_id: "3Kq1MIfTWCE", body: "Passwords, phishing and the everyday habits that keep systems secure." },
+        ],
+        quiz: {
+          title: "Cybersecurity Foundations",
+          questions: [
+            { prompt: "What makes a strong password?", options: ["Short and simple", "Long, unique, with MFA", "Your name", "12345"], correct_index: 1 },
+            { prompt: "Phishing is…", options: ["A network cable", "Tricking people into revealing secrets", "A backup", "A firewall"], correct_index: 1 },
+            { prompt: "MFA stands for…", options: ["Multi-Factor Authentication", "Main Frame Access", "Managed File Archive", "Multi Format Audio"], correct_index: 0 },
+            { prompt: "Why keep software updated?", options: ["For new colours", "To patch security flaws", "To use more data", "No reason"], correct_index: 1 },
+            { prompt: "What does encryption protect?", options: ["Data confidentiality", "Screen brightness", "Typing speed", "Battery life"], correct_index: 0 },
+            { prompt: "A suspicious email link should be…", options: ["Clicked quickly", "Verified before clicking", "Forwarded to everyone", "Trusted by default"], correct_index: 1 },
+            { prompt: "The CIA triad refers to…", options: ["Confidentiality, Integrity, Availability", "A spy agency", "Three servers", "A password"], correct_index: 0 },
+            { prompt: "Public Wi-Fi is risky because…", options: ["It is fast", "Traffic can be intercepted", "It saves battery", "It is colourful"], correct_index: 1 },
+          ],
+        },
+      },
+      {
+        title: "Technical Problem-Solving",
+        lessons: [
+          { title: "A method for solving problems", youtube_id: "oXlwWbU8l2o", body: "Understand, plan, execute and review: a repeatable approach to any technical problem." },
+        ],
+        quiz: {
+          title: "Technical Problem-Solving",
+          questions: [
+            { prompt: "The first step in solving a problem is…", options: ["Start coding immediately", "Understand the problem clearly", "Pick a framework", "Give up"], correct_index: 1 },
+            { prompt: "Pseudocode helps you…", options: ["Plan logic before coding", "Encrypt data", "Style a page", "Send email"], correct_index: 0 },
+            { prompt: "When stuck, a good tactic is to…", options: ["Break the problem smaller", "Delete everything", "Guess randomly", "Ignore it"], correct_index: 0 },
+            { prompt: "An edge case is…", options: ["A rare or extreme input", "The main input", "A colour", "A server"], correct_index: 0 },
+            { prompt: "Testing your solution helps to…", options: ["Confirm it works and find bugs", "Slow it down", "Hide errors", "Skip review"], correct_index: 0 },
+            { prompt: "Reading an error message is…", options: ["A waste of time", "Often the fastest path to the fix", "Only for experts", "Never useful"], correct_index: 1 },
+            { prompt: "Rubber-duck debugging means…", options: ["Explaining the problem step by step out loud", "Buying a toy", "Restarting the PC", "Deleting code"], correct_index: 0 },
+            { prompt: "A good solution is usually…", options: ["As complex as possible", "Simple, correct and clear", "Undocumented", "Copied blindly"], correct_index: 1 },
+          ],
+        },
+      },
+      {
+        title: "Building Real-World Projects",
+        lessons: [
+          { title: "From idea to shipped project", youtube_id: "gSSsZReIFRk", body: "Scope a small project, build it in steps, and ship something real." },
+        ],
+        quiz: {
+          title: "Building Real-World Projects",
+          questions: [
+            { prompt: "A good first project is…", options: ["Huge and complex", "Small and finishable", "Never started", "Copied entirely"], correct_index: 1 },
+            { prompt: "Version control (like Git) helps you…", options: ["Track and manage changes", "Encrypt disks", "Design logos", "Send email"], correct_index: 0 },
+            { prompt: "An MVP is…", options: ["Most Valuable Player", "A minimal version that works", "A finished product", "A password"], correct_index: 1 },
+            { prompt: "Why ship early and iterate?", options: ["To get feedback and improve", "To avoid learning", "To waste time", "No reason"], correct_index: 0 },
+            { prompt: "A README file is for…", options: ["Explaining what the project does and how to run it", "Storing passwords", "Styling the page", "Nothing"], correct_index: 0 },
+            { prompt: "Breaking a project into tasks helps to…", options: ["Make progress manageable", "Confuse the team", "Hide the work", "Slow delivery"], correct_index: 0 },
+            { prompt: "Deploying means…", options: ["Making the project available to users", "Deleting it", "Printing it", "Hiding it"], correct_index: 0 },
+            { prompt: "Feedback on your project should be…", options: ["Ignored", "Used to improve the next version", "Feared", "Deleted"], correct_index: 1 },
+          ],
+        },
+        assignment: {
+          title: "Foundations capstone project",
+          instructions: "Build and ship a small end-to-end project that uses what you have learned, then submit a link to the live project or repository.",
+        },
+      },
+    ],
+  },
 ];
 
 async function main() {
@@ -354,6 +488,7 @@ async function main() {
     { email: "student.security@avzdax.com", full_name: "David Okoro", course: "Cybersecurity" },
     { email: "student.backend@avzdax.com", full_name: "Grace Adeyinka", course: "Backend Development" },
     { email: "student.data@avzdax.com", full_name: "Ibrahim Sani", course: "Data Intelligence" },
+    { email: "student.foundations@avzdax.com", full_name: "Amara Nwachukwu", course: "AVZDAX Foundations Programme" },
   ];
 
   for (const learner of learners) {
