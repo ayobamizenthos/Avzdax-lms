@@ -398,6 +398,15 @@ const courses = [
 ];
 
 async function main() {
+  if (process.env.SEED_RESET !== "yes") {
+    console.error(
+      "Refusing to run. This script deletes every course, submission and notification,\n" +
+        "then recreates demo accounts. The platform is live.\n" +
+        "Run with SEED_RESET=yes only against a throwaway database."
+    );
+    process.exit(1);
+  }
+
   const ids = {};
   for (const person of staff) {
     ids[person.key] = await upsertUser(person);
