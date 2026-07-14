@@ -129,9 +129,9 @@ const courses = [
   },
   {
     tutorKey: "cyber",
-    title: "Cybersecurity",
+    title: "Backend Security",
     summary:
-      "Defend systems like an attacker thinks. Learn threat modelling, network defence, and secure engineering from the ground up.",
+      "Secure the systems behind the product. Threat modelling, authentication, API and data protection for backend engineers.",
     modules: [
       {
         title: "Security Foundations",
@@ -140,7 +140,7 @@ const courses = [
           { title: "How attacks actually happen", youtube_id: "3Kq1MIfTWCE", body: "Walk through the anatomy of common real-world attacks." },
         ],
         quiz: {
-          title: "Cybersecurity Essentials",
+          title: "Backend Security Essentials",
           questions: [
             { prompt: "What does the C in the CIA triad stand for?", options: ["Confidentiality", "Control", "Compliance", "Continuity"], correct_index: 0 },
             { prompt: "Which attack floods a server to make it unavailable?", options: ["Denial of Service", "Phishing", "SQL injection", "Spoofing"], correct_index: 0 },
@@ -485,7 +485,7 @@ async function main() {
   const learners = [
     { email: "student@avzdax.com", full_name: "Chiamaka Eze", course: "Backend Development" },
     { email: "student.vision@avzdax.com", full_name: "Zainab Yusuf", course: "Computer Vision" },
-    { email: "student.security@avzdax.com", full_name: "David Okoro", course: "Cybersecurity" },
+    { email: "student.security@avzdax.com", full_name: "David Okoro", course: "Backend Security" },
     { email: "student.backend@avzdax.com", full_name: "Grace Adeyinka", course: "Backend Development" },
     { email: "student.data@avzdax.com", full_name: "Ibrahim Sani", course: "Data Intelligence" },
     { email: "student.foundations@avzdax.com", full_name: "Amara Nwachukwu", course: "AVZDAX Foundations Programme" },
