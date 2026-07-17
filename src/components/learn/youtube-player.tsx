@@ -150,11 +150,16 @@ export function YouTubePlayer({
         <div ref={hostRef} className="size-full" />
       </div>
 
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black via-black/60 to-transparent" />
+
       <button
         type="button"
         onClick={toggle}
         aria-label={playing ? `Pause ${title}` : `Play ${title}`}
-        className="absolute inset-0 z-10 grid place-items-center"
+        className={cn(
+          "absolute inset-0 z-10 grid place-items-center transition-colors",
+          playing ? "bg-transparent" : "bg-black/70"
+        )}
       >
         {!playing ? (
           <span className="grid size-16 place-items-center rounded-full bg-white/95 text-ink shadow-float transition-transform group-hover:scale-105">
