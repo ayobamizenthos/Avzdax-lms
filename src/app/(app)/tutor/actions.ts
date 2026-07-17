@@ -202,6 +202,50 @@ export async function scheduleClass(
   return { error: null };
 }
 
+export async function updateClass(
+  classId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const title = String(formData.get("title") ?? "").trim();
+  const teamsUrl = String(formData.get("teams_url") ?? "").trim();
+  const startsAt = String(formData.get("starts_at") ?? "").trim();
+  const duration = Number(formData.get("duration") ?? 60);
+  if (!title || !teamsUrl || !startsAt) {
+    return { error: "Fill in the title, link and start time." };
+  }
+
+  const { error } = await supabase
+    .from("class_sessions")
+    .update({
+      title,
+      teams_url: teamsUrl,
+      starts_at: new Date(startsAt).toISOString(),
+      duration_minutes: Number.isFinite(duration) ? duration : 60,
+    })
+    .eq("id", classId);
+  if (error) return { error: "Could not update the class." };
+
+  revalidatePath("/tutor/classes");
+  return { error: null };
+}
+
+export async function deleteClass(classId: string): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("class_sessions")
+    .delete()
+    .eq("id", classId);
+  if (error) return { error: "Could not delete the class." };
+
+  revalidatePath("/tutor/classes");
+  return { error: null };
+}
+
 type QuizQuestionInput = {
   prompt: string;
   options: string[];

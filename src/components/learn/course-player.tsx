@@ -87,7 +87,7 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
             </div>
           </div>
 
-          <div className="max-h-[32rem] overflow-y-auto p-2">
+          <div className="max-h-[60vh] overflow-y-auto overscroll-contain scroll-smooth p-2 lg:max-h-[calc(100vh-11rem)]">
             {course.modules.map((unit, index) => (
               <div key={unit.id} className="mb-2">
                 <p className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-muted">
