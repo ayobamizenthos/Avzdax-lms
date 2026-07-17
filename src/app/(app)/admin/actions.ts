@@ -80,6 +80,12 @@ export async function createUser(
 
   if (role === "tutor" && courseId) {
     await admin.from("courses").update({ tutor_id: created.user.id }).eq("id", courseId);
+    await admin
+      .from("course_tutors")
+      .upsert(
+        { course_id: courseId, tutor_id: created.user.id },
+        { onConflict: "course_id,tutor_id" }
+      );
   }
 
   revalidatePath("/admin/users");
@@ -87,17 +93,73 @@ export async function createUser(
   return { error: null, password };
 }
 
-export async function assignCourseTutor(
+export async function addCourseTutor(
   courseId: string,
   tutorId: string
 ): Promise<ActionResult> {
   if (!(await assertAdmin())) return { error: "Not authorised." };
   const admin = createAdminClient();
+
   const { error } = await admin
+    .from("course_tutors")
+    .upsert(
+      { course_id: courseId, tutor_id: tutorId },
+      { onConflict: "course_id,tutor_id" }
+    );
+  if (error) return { error: "Could not add the tutor." };
+
+  const { data: course } = await admin
     .from("courses")
-    .update({ tutor_id: tutorId })
-    .eq("id", courseId);
-  if (error) return { error: "Could not assign the tutor." };
+    .select("tutor_id")
+    .eq("id", courseId)
+    .single();
+  if (!course?.tutor_id) {
+    await admin.from("courses").update({ tutor_id: tutorId }).eq("id", courseId);
+  }
+
+  await notify({
+    recipientIds: [tutorId],
+    title: "You've been added to a course",
+    body: "You can now manage this course. Head to Courses to begin.",
+    href: "/tutor/courses",
+  });
+
+  revalidatePath("/admin/courses");
+  return { error: null };
+}
+
+export async function removeCourseTutor(
+  courseId: string,
+  tutorId: string
+): Promise<ActionResult> {
+  if (!(await assertAdmin())) return { error: "Not authorised." };
+  const admin = createAdminClient();
+
+  const { error } = await admin
+    .from("course_tutors")
+    .delete()
+    .eq("course_id", courseId)
+    .eq("tutor_id", tutorId);
+  if (error) return { error: "Could not remove the tutor." };
+
+  const { data: course } = await admin
+    .from("courses")
+    .select("tutor_id")
+    .eq("id", courseId)
+    .single();
+  if (course?.tutor_id === tutorId) {
+    const { data: remaining } = await admin
+      .from("course_tutors")
+      .select("tutor_id")
+      .eq("course_id", courseId)
+      .limit(1)
+      .maybeSingle();
+    await admin
+      .from("courses")
+      .update({ tutor_id: remaining?.tutor_id ?? null })
+      .eq("id", courseId);
+  }
+
   revalidatePath("/admin/courses");
   return { error: null };
 }

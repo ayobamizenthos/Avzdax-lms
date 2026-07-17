@@ -49,3 +49,12 @@ export async function adminIds() {
   const { data } = await admin.from("profiles").select("id").eq("role", "admin");
   return (data ?? []).map((row) => row.id);
 }
+
+export async function courseTutorIds(courseId: string) {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("course_tutors")
+    .select("tutor_id")
+    .eq("course_id", courseId);
+  return (data ?? []).map((row) => row.tutor_id);
+}

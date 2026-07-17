@@ -121,9 +121,7 @@ export function UsersDirectory({
                       <p className="text-ink-soft">{person.email}</p>
                       {person.phone ? (
                         <p className="text-xs text-muted">{person.phone}</p>
-                      ) : (
-                        <p className="text-xs text-muted">No phone</p>
-                      )}
+                      ) : null}
                     </td>
                     <td className="px-5 py-4 text-ink-soft">{person.context}</td>
                     <td className="px-5 py-4">

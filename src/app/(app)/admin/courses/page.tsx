@@ -17,7 +17,9 @@ export default async function AdminCoursesPage() {
   const [{ data: courses }, { data: tutors }] = await Promise.all([
     supabase
       .from("courses")
-      .select("id, title, tutor_id, is_published, modules(id), enrollments(id)")
+      .select(
+        "id, title, is_published, modules(id), enrollments(id), course_tutors(tutor_id)"
+      )
       .order("created_at", { ascending: false }),
     supabase
       .from("profiles")
@@ -29,7 +31,7 @@ export default async function AdminCoursesPage() {
   const directory = (courses ?? []).map((course) => ({
     id: course.id,
     title: course.title,
-    tutor_id: course.tutor_id,
+    tutorIds: (course.course_tutors ?? []).map((row) => row.tutor_id),
     is_published: course.is_published,
     moduleCount: course.modules?.length ?? 0,
     enrolledCount: course.enrollments?.length ?? 0,

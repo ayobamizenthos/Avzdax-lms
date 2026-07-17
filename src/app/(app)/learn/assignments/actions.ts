@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
-import { notify } from "@/lib/notify";
+import { notify, courseTutorIds } from "@/lib/notify";
 import type { Database } from "@/lib/database.types";
 
 type SubmissionInsert = Database["public"]["Tables"]["submissions"]["Insert"];
@@ -89,16 +89,16 @@ export async function submitAssignment(
     supabase.from("profiles").select("full_name").eq("id", user.id).single(),
     supabase
       .from("assignments")
-      .select("title, modules(courses(tutor_id))")
+      .select("title, modules(courses(id))")
       .eq("id", assignmentId)
       .single(),
   ]);
 
-  const courseTutorId = assignment?.modules?.courses?.tutor_id;
+  const courseId = assignment?.modules?.courses?.id;
 
-  if (courseTutorId) {
+  if (courseId) {
     await notify({
-      recipientIds: [courseTutorId],
+      recipientIds: await courseTutorIds(courseId),
       title: "New submission received",
       body: `${profile?.full_name ?? "A student"} submitted "${assignment?.title ?? "an assignment"}"`,
       href: "/tutor/submissions",

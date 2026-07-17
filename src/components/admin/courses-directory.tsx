@@ -8,12 +8,12 @@ import { Card, CardBody } from "@/components/ui/card";
 import { Input } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CourseTutorSelect } from "@/components/admin/course-tutor-select";
+import { CourseTutors } from "@/components/admin/course-tutors";
 
 type Course = {
   id: string;
   title: string;
-  tutor_id: string | null;
+  tutorIds: string[];
   is_published: boolean;
   moduleCount: number;
   enrolledCount: number;
@@ -36,10 +36,12 @@ export function CoursesDirectory({
     const term = query.trim().toLowerCase();
     if (!term) return courses;
     return courses.filter((course) => {
-      const tutor = course.tutor_id ? tutorName.get(course.tutor_id) ?? "" : "";
+      const names = course.tutorIds
+        .map((id) => tutorName.get(id) ?? "")
+        .join(" ")
+        .toLowerCase();
       return (
-        course.title.toLowerCase().includes(term) ||
-        tutor.toLowerCase().includes(term)
+        course.title.toLowerCase().includes(term) || names.includes(term)
       );
     });
   }, [courses, query, tutorName]);
@@ -88,11 +90,11 @@ export function CoursesDirectory({
 
                 <div className="mt-4">
                   <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted">
-                    Course tutor
+                    Course tutors
                   </p>
-                  <CourseTutorSelect
+                  <CourseTutors
                     courseId={course.id}
-                    tutorId={course.tutor_id}
+                    assignedIds={course.tutorIds}
                     tutors={tutors}
                   />
                 </div>
