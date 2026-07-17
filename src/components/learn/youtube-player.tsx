@@ -158,7 +158,7 @@ export function YouTubePlayer({
         aria-label={playing ? `Pause ${title}` : `Play ${title}`}
         className={cn(
           "absolute inset-0 z-10 grid place-items-center transition-colors",
-          playing ? "bg-transparent" : "bg-black/70"
+          playing ? "bg-transparent" : "bg-black/95"
         )}
       >
         {!playing ? (
