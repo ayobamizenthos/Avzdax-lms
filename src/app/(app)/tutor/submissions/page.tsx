@@ -24,6 +24,7 @@ type SubmissionRow = {
   file_url: string | null;
   file_paths: SubmissionFile[] | null;
   link_url: string | null;
+  link_urls: string[] | null;
   status: "pending" | "graded";
   score: number | null;
   feedback: string | null;
@@ -44,7 +45,7 @@ export default async function SubmissionsPage() {
   const { data } = await supabase
     .from("submissions")
     .select(
-      `id, kind, body, file_url, file_paths, link_url, status, score, feedback, submitted_at,
+      `id, kind, body, file_url, file_paths, link_url, link_urls, status, score, feedback, submitted_at,
        student:profiles!submissions_student_id_fkey ( full_name, avatar_url, email, phone ),
        assignment:assignments ( title )`
     )
@@ -55,13 +56,13 @@ export default async function SubmissionsPage() {
 
   const signedFiles = new Map<string, { name: string; url: string }[]>();
   for (const submission of submissions) {
-    if (submission.kind !== "file") continue;
     const files =
       submission.file_paths && submission.file_paths.length > 0
         ? submission.file_paths
         : submission.file_url
           ? [{ path: submission.file_url, name: "Submitted file" }]
           : [];
+    if (files.length === 0) continue;
     const signed: { name: string; url: string }[] = [];
     for (const file of files) {
       const { data: link } = await supabase.storage
@@ -133,41 +134,73 @@ export default async function SubmissionsPage() {
                   )}
                 </div>
 
-                <div className="mt-4 rounded-sm border border-line bg-paper p-4">
-                  {submission.kind === "text" ? (
-                    <p className="whitespace-pre-line text-sm text-ink-soft">
-                      {submission.body}
-                    </p>
-                  ) : submission.kind === "link" ? (
-                    <a
-                      href={submission.link_url ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
-                    >
-                      <ExternalLink className="size-4" />
-                      {submission.link_url}
-                    </a>
-                  ) : (
-                    <ul className="space-y-2">
-                      {(signedFiles.get(submission.id) ?? []).map((file, index) => (
-                        <li key={index}>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
-                          >
-                            <Download className="size-4" />
-                            {file.name}
-                          </a>
-                        </li>
-                      ))}
-                      {(signedFiles.get(submission.id) ?? []).length === 0 ? (
-                        <li className="text-sm text-muted">No files attached.</li>
-                      ) : null}
-                    </ul>
-                  )}
+                <div className="mt-4 space-y-4 rounded-sm border border-line bg-paper p-4">
+                  {submission.body ? (
+                    <div>
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
+                        Written response
+                      </p>
+                      <p className="whitespace-pre-line text-sm text-ink-soft">
+                        {submission.body}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {(signedFiles.get(submission.id) ?? []).length > 0 ? (
+                    <div>
+                      <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+                        Files
+                      </p>
+                      <ul className="space-y-2">
+                        {(signedFiles.get(submission.id) ?? []).map((file, index) => (
+                          <li key={index}>
+                            <a
+                              href={file.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
+                            >
+                              <Download className="size-4" />
+                              {file.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  {(submission.link_urls && submission.link_urls.length > 0
+                    ? submission.link_urls
+                    : submission.link_url
+                      ? [submission.link_url]
+                      : []
+                  ).length > 0 ? (
+                    <div>
+                      <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+                        Links
+                      </p>
+                      <ul className="space-y-2">
+                        {(submission.link_urls && submission.link_urls.length > 0
+                          ? submission.link_urls
+                          : submission.link_url
+                            ? [submission.link_url]
+                            : []
+                        ).map((link, index) => (
+                          <li key={index}>
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-sm font-medium text-brand hover:underline"
+                            >
+                              <ExternalLink className="size-4" />
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="mt-4 border-t border-line pt-4">

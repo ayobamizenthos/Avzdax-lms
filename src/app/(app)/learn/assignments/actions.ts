@@ -21,63 +21,63 @@ export async function submitAssignment(
   if (!user) return { error: "Your session expired. Sign in again.", ok: false };
 
   const assignmentId = String(formData.get("assignment_id") ?? "");
-  const kind = String(formData.get("kind") ?? "text") as
-    | "text"
-    | "file"
-    | "link";
-
   if (!assignmentId) return { error: "Missing assignment.", ok: false };
+
+  const body = String(formData.get("body") ?? "").trim();
+
+  const links = formData
+    .getAll("link_url")
+    .map((entry) => String(entry).trim())
+    .filter((entry) => entry.length > 0);
+  for (const link of links) {
+    if (!/^https?:\/\//i.test(link)) {
+      return { error: `"${link}" is not a valid link. Links must start with http.`, ok: false };
+    }
+  }
+
+  const files = formData
+    .getAll("file")
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+  if (!body && files.length === 0 && links.length === 0) {
+    return {
+      error: "Add a written response, a file or a link before submitting.",
+      ok: false,
+    };
+  }
+
+  const uploaded: { path: string; name: string }[] = [];
+  for (const file of files) {
+    const path = `${user.id}/${assignmentId}/${Date.now()}-${file.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from("submissions")
+      .upload(path, file, { upsert: true });
+    if (uploadError) {
+      return { error: `Upload failed for ${file.name}. Try a smaller file.`, ok: false };
+    }
+    uploaded.push({ path, name: file.name });
+  }
+
+  const kind: "text" | "file" | "link" = body
+    ? "text"
+    : uploaded.length > 0
+      ? "file"
+      : "link";
 
   const payload: SubmissionInsert = {
     assignment_id: assignmentId,
     student_id: user.id,
     kind,
-    body: null,
-    file_url: null,
-    file_paths: [],
-    link_url: null,
+    body: body || null,
+    file_url: uploaded[0]?.path ?? null,
+    file_paths: uploaded,
+    link_url: links[0] ?? null,
+    link_urls: links,
     status: "pending",
     score: null,
     feedback: null,
     submitted_at: new Date().toISOString(),
   };
-
-  if (kind === "text") {
-    const body = String(formData.get("body") ?? "").trim();
-    if (!body) return { error: "Write your response before submitting.", ok: false };
-    payload.body = body;
-  }
-
-  if (kind === "link") {
-    const link = String(formData.get("link_url") ?? "").trim();
-    if (!/^https?:\/\//i.test(link)) {
-      return { error: "Enter a valid link starting with http.", ok: false };
-    }
-    payload.link_url = link;
-  }
-
-  if (kind === "file") {
-    const files = formData
-      .getAll("file")
-      .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-    if (files.length === 0) {
-      return { error: "Choose at least one file to upload.", ok: false };
-    }
-
-    const uploaded: { path: string; name: string }[] = [];
-    for (const file of files) {
-      const path = `${user.id}/${assignmentId}/${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from("submissions")
-        .upload(path, file, { upsert: true });
-      if (uploadError) {
-        return { error: `Upload failed for ${file.name}. Try a smaller file.`, ok: false };
-      }
-      uploaded.push({ path, name: file.name });
-    }
-    payload.file_paths = uploaded;
-    payload.file_url = uploaded[0]?.path ?? null;
-  }
 
   const { error } = await supabase
     .from("submissions")

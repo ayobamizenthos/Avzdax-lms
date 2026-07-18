@@ -16,10 +16,12 @@ export function MobileNav({
   role,
   name,
   roleLabel,
+  badges = {},
 }: {
   role: Role;
   name: string;
   roleLabel: string;
+  badges?: Record<string, number>;
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -75,6 +77,11 @@ export function MobileNav({
                   >
                     <item.icon className="size-[1.15rem]" strokeWidth={1.9} />
                     {item.label}
+                    {badges[item.href] ? (
+                      <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-[0.65rem] font-semibold text-brand-ink">
+                        {badges[item.href]}
+                      </span>
+                    ) : null}
                     <NavLinkStatus />
                   </Link>
                 );

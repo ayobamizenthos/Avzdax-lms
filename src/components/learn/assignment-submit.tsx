@@ -1,27 +1,16 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { FileUp, Link2, Loader2, PenLine } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 
-import { useEffect } from "react";
-
-import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/field";
+import { Input, Label, Textarea } from "@/components/ui/field";
 import { playSuccess } from "@/lib/notification-sound";
 import {
   submitAssignment,
   type SubmitState,
 } from "@/app/(app)/learn/assignments/actions";
-
-type Kind = "text" | "file" | "link";
-
-const options: { kind: Kind; label: string; icon: typeof PenLine }[] = [
-  { kind: "text", label: "Write", icon: PenLine },
-  { kind: "file", label: "Files", icon: FileUp },
-  { kind: "link", label: "Link", icon: Link2 },
-];
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -33,7 +22,7 @@ function SubmitButton() {
 }
 
 export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
-  const [kind, setKind] = useState<Kind>("text");
+  const [links, setLinks] = useState<string[]>([""]);
   const [state, formAction] = useActionState<SubmitState, FormData>(
     submitAssignment,
     { error: null, ok: false }
@@ -52,57 +41,79 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-5">
       <input type="hidden" name="assignment_id" value={assignmentId} />
-      <input type="hidden" name="kind" value={kind} />
 
-      <div className="inline-flex rounded-sm border border-line bg-paper p-1">
-        {options.map((option) => (
-          <button
-            key={option.kind}
-            type="button"
-            onClick={() => setKind(option.kind)}
-            className={cn(
-              "flex items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-sm font-medium transition-colors",
-              kind === option.kind
-                ? "bg-surface text-ink shadow-card"
-                : "text-muted hover:text-ink"
-            )}
-          >
-            <option.icon className="size-4" />
-            {option.label}
-          </button>
-        ))}
-      </div>
-
-      {kind === "text" ? (
+      <div>
+        <Label htmlFor={`body-${assignmentId}`}>Written response</Label>
         <Textarea
+          id={`body-${assignmentId}`}
           name="body"
           rows={5}
-          placeholder="Write your response…"
-          required
+          placeholder="Type your answer here"
         />
-      ) : kind === "link" ? (
-        <Input
-          name="link_url"
-          type="url"
-          placeholder="https://your-project.example.com"
-          required
-        />
-      ) : (
-        <div>
-          <Input name="file" type="file" multiple required className="pt-2.5" />
-          <p className="mt-1.5 text-sm text-muted">
-            You can attach multiple documents at once.
-          </p>
+      </div>
+
+      <div>
+        <Label>Attachments</Label>
+        <Input name="file" type="file" multiple className="pt-2.5" />
+        <p className="mt-1.5 text-sm text-muted">
+          Attach one or more files.
+        </p>
+      </div>
+
+      <div>
+        <Label>Links</Label>
+        <div className="space-y-2">
+          {links.map((link, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input
+                name="link_url"
+                type="url"
+                value={link}
+                onChange={(event) =>
+                  setLinks((prev) =>
+                    prev.map((value, i) =>
+                      i === index ? event.target.value : value
+                    )
+                  )
+                }
+                placeholder="https://your-project.example.com"
+              />
+              {links.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLinks((prev) => prev.filter((_, i) => i !== index))
+                  }
+                  className="grid size-8 shrink-0 place-items-center rounded-sm text-muted transition-colors hover:bg-danger-tint hover:text-danger"
+                  aria-label="Remove link"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : null}
+            </div>
+          ))}
         </div>
-      )}
+        <button
+          type="button"
+          onClick={() => setLinks((prev) => [...prev, ""])}
+          className="mt-2 flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
+        >
+          <Plus className="size-4" />
+          Add another link
+        </button>
+      </div>
 
       {state.error ? (
         <p className="text-sm text-danger">{state.error}</p>
       ) : null}
 
       <SubmitButton />
+
+      <p className="text-xs text-muted">
+        Submit any combination of written text, files and links.
+      </p>
     </form>
   );
 }

@@ -8,7 +8,13 @@ import { navFor } from "@/lib/navigation";
 import { NavLinkStatus } from "@/components/app/nav-link-status";
 import type { Role } from "@/lib/session";
 
-export function SidebarNav({ role }: { role: Role }) {
+export function SidebarNav({
+  role,
+  badges = {},
+}: {
+  role: Role;
+  badges?: Record<string, number>;
+}) {
   const pathname = usePathname();
   const items = navFor(role);
 
@@ -41,6 +47,11 @@ export function SidebarNav({ role }: { role: Role }) {
               strokeWidth={1.9}
             />
             {item.label}
+            {badges[item.href] ? (
+              <span className="ml-auto grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-[0.65rem] font-semibold text-brand-ink">
+                {badges[item.href]}
+              </span>
+            ) : null}
             <NavLinkStatus />
           </Link>
         );

@@ -634,6 +634,7 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["submission_kind"]
           link_url: string | null
+          link_urls: Json
           score: number | null
           status: Database["public"]["Enums"]["submission_status"]
           student_id: string
@@ -649,6 +650,7 @@ export type Database = {
           id?: string
           kind: Database["public"]["Enums"]["submission_kind"]
           link_url?: string | null
+          link_urls?: Json
           score?: number | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id: string
@@ -664,6 +666,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["submission_kind"]
           link_url?: string | null
+          link_urls?: Json
           score?: number | null
           status?: Database["public"]["Enums"]["submission_status"]
           student_id?: string

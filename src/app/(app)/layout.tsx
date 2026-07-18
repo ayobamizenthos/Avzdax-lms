@@ -27,6 +27,24 @@ export default async function AppLayout({
     .order("created_at", { ascending: false })
     .limit(30);
 
+  const navBadges: Record<string, number> = {};
+  if (profile.role === "student") {
+    const [{ data: assignments }, { data: submissions }] = await Promise.all([
+      supabase.from("assignments").select("id"),
+      supabase.from("submissions").select("assignment_id"),
+    ]);
+    const submitted = new Set((submissions ?? []).map((row) => row.assignment_id));
+    navBadges["/learn/assignments"] = (assignments ?? []).filter(
+      (assignment) => !submitted.has(assignment.id)
+    ).length;
+  } else if (profile.role === "tutor") {
+    const { count } = await supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending");
+    navBadges["/tutor/submissions"] = count ?? 0;
+  }
+
   return (
     <div className="flex min-h-dvh bg-paper">
       <RealtimeRefresh />
@@ -36,7 +54,7 @@ export default async function AppLayout({
           <Wordmark />
         </div>
         <div className="mt-8 flex-1">
-          <SidebarNav role={profile.role} />
+          <SidebarNav role={profile.role} badges={navBadges} />
         </div>
         <AccountMenu
           name={profile.full_name}
@@ -52,6 +70,7 @@ export default async function AppLayout({
             role={profile.role}
             name={profile.full_name}
             roleLabel={roleLabel[profile.role]}
+            badges={navBadges}
           />
           <div className="ml-auto flex items-center gap-3">
             <NotificationBell
