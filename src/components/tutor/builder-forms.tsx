@@ -182,7 +182,7 @@ export function AddLesson({
         <Input name="youtube" placeholder="https://youtu.be/…" />
       </Field>
       <Field label="Lesson notes">
-        <Textarea name="body" rows={3} placeholder="Optional notes or context" />
+        <Textarea name="body" rows={3} placeholder="Notes or context for this lesson" />
       </Field>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       <div className="flex gap-2">

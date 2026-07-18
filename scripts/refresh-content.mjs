@@ -33,6 +33,18 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
+function shuffleOptions(options, correctIndex) {
+  const paired = options.map((option, index) => ({ option, correct: index === correctIndex }));
+  for (let i = paired.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [paired[i], paired[j]] = [paired[j], paired[i]];
+  }
+  return {
+    options: paired.map((entry) => entry.option),
+    correct_index: paired.findIndex((entry) => entry.correct),
+  };
+}
+
 for (const course of courses) {
   const { data: existing } = await supabase
     .from("courses")
@@ -75,11 +87,12 @@ for (const course of courses) {
         .single();
       let questionPosition = 0;
       for (const question of unit.quiz.questions) {
+        const shuffled = shuffleOptions(question.options, question.correct_index);
         await supabase.from("quiz_questions").insert({
           quiz_id: quizRow.id,
           prompt: question.prompt,
-          options: question.options,
-          correct_index: question.correct_index,
+          options: shuffled.options,
+          correct_index: shuffled.correct_index,
           position: questionPosition++,
         });
       }

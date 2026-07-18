@@ -42,6 +42,18 @@ const supabase = createClient(
 
 const password = "Academy2026!";
 
+function shuffleOptions(options, correctIndex) {
+  const paired = options.map((option, index) => ({ option, correct: index === correctIndex }));
+  for (let i = paired.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [paired[i], paired[j]] = [paired[j], paired[i]];
+  }
+  return {
+    options: paired.map((entry) => entry.option),
+    correct_index: paired.findIndex((entry) => entry.correct),
+  };
+}
+
 const staff = [
   { key: "admin", email: "admin@avzdax.com", full_name: "Ayobami Zenthos", role: "admin" },
   { key: "cv", email: "tutor.vision@avzdax.com", full_name: "Ngozi Okafor", role: "tutor" },
@@ -146,11 +158,12 @@ async function main() {
           .single();
         let questionPosition = 0;
         for (const question of unit.quiz.questions) {
+          const shuffled = shuffleOptions(question.options, question.correct_index);
           await supabase.from("quiz_questions").insert({
             quiz_id: quizRow.id,
             prompt: question.prompt,
-            options: question.options,
-            correct_index: question.correct_index,
+            options: shuffled.options,
+            correct_index: shuffled.correct_index,
             position: questionPosition++,
           });
         }

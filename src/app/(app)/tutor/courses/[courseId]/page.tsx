@@ -14,7 +14,7 @@ import {
   DeleteModule,
   PublishToggle,
 } from "@/components/tutor/builder-forms";
-import { QuizBuilder } from "@/components/tutor/quiz-builder";
+import { QuizEditor } from "@/components/tutor/quiz-editor";
 import { LessonManager } from "@/components/tutor/lesson-manager";
 
 export const metadata: Metadata = {
@@ -37,7 +37,8 @@ export default async function CourseBuilder({
        modules ( id, title, position,
          lessons ( id, title, youtube_id, body, position, resources ( id, name ) ),
          assignments ( id, title ),
-         quizzes ( id, title, quiz_questions ( id ) )
+         quizzes ( id, title, pass_score,
+           quiz_questions ( id, prompt, options, correct_index, position ) )
        )`
     )
     .eq("id", courseId)
@@ -98,12 +99,32 @@ export default async function CourseBuilder({
                   ))}
 
                   {quiz ? (
-                    <div className="flex items-center gap-3 rounded-sm border border-line px-3.5 py-2.5 text-sm">
-                      <ListChecks className="size-4 text-brand" />
-                      <span className="flex-1 text-ink">{quiz.title}</span>
-                      <Badge tone="brand">
-                        {quiz.quiz_questions?.length ?? 0} questions
-                      </Badge>
+                    <div className="rounded-sm border border-line px-3.5 py-3">
+                      <div className="flex items-center gap-3 text-sm">
+                        <ListChecks className="size-4 text-brand" />
+                        <span className="flex-1 text-ink">{quiz.title}</span>
+                        <Badge tone="brand">
+                          {quiz.quiz_questions?.length ?? 0} questions
+                        </Badge>
+                      </div>
+                      <div className="mt-2">
+                        <QuizEditor
+                          courseId={course.id}
+                          moduleId={courseModule.id}
+                          quiz={{
+                            id: quiz.id,
+                            title: quiz.title,
+                            passScore: quiz.pass_score,
+                            questions: [...(quiz.quiz_questions ?? [])]
+                              .sort((a, b) => a.position - b.position)
+                              .map((question) => ({
+                                prompt: question.prompt,
+                                options: (question.options as string[]) ?? [],
+                                correctIndex: question.correct_index,
+                              })),
+                          }}
+                        />
+                      </div>
                     </div>
                   ) : null}
 
@@ -120,7 +141,7 @@ export default async function CourseBuilder({
                   <AddLesson courseId={course.id} moduleId={courseModule.id} />
                   <AddAssignment courseId={course.id} moduleId={courseModule.id} />
                   {!quiz ? (
-                    <QuizBuilder courseId={course.id} moduleId={courseModule.id} />
+                    <QuizEditor courseId={course.id} moduleId={courseModule.id} />
                   ) : null}
                 </div>
               </CardBody>

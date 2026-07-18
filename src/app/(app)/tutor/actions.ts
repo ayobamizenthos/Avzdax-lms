@@ -252,6 +252,63 @@ type QuizQuestionInput = {
   correctIndex: number;
 };
 
+type PreparedQuestion = {
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+};
+
+function prepareQuestions(
+  raw: QuizQuestionInput[]
+): { error: string } | { questions: PreparedQuestion[] } {
+  const prepared: PreparedQuestion[] = [];
+
+  for (const question of raw) {
+    const prompt = question.prompt.trim();
+    const kept = question.options
+      .map((option, index) => ({ option: option.trim(), index }))
+      .filter((entry) => entry.option.length > 0);
+
+    if (!prompt && kept.length === 0) continue;
+    if (!prompt) return { error: "Every question needs a prompt." };
+    if (kept.length < 2) return { error: "Every question needs at least two options." };
+
+    const correctIndex = kept.findIndex((entry) => entry.index === question.correctIndex);
+    if (correctIndex < 0) {
+      return { error: "Mark the correct answer for every question." };
+    }
+
+    prepared.push({
+      prompt,
+      options: kept.map((entry) => entry.option),
+      correctIndex,
+    });
+  }
+
+  if (prepared.length === 0) return { error: "Add at least one complete question." };
+  return { questions: prepared };
+}
+
+function resolvePassScore(value: number) {
+  return Number.isFinite(value) && value > 0 ? Math.min(100, value) : 70;
+}
+
+async function writeQuestions(
+  supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"],
+  quizId: string,
+  questions: PreparedQuestion[]
+) {
+  return supabase.from("quiz_questions").insert(
+    questions.map((question, index) => ({
+      quiz_id: quizId,
+      prompt: question.prompt,
+      options: question.options,
+      correct_index: question.correctIndex,
+      position: index,
+    }))
+  );
+}
+
 export async function createQuiz(
   courseId: string,
   moduleId: string,
@@ -263,44 +320,17 @@ export async function createQuiz(
   const title = input.title.trim();
   if (!title) return { error: "Give the quiz a title." };
 
-  const cleanQuestions = input.questions
-    .map((question) => ({
-      prompt: question.prompt.trim(),
-      options: question.options.map((option) => option.trim()),
-      correctIndex: question.correctIndex,
-    }))
-    .filter(
-      (question) =>
-        question.prompt &&
-        question.options.filter(Boolean).length >= 2 &&
-        question.options[question.correctIndex]
-    );
-
-  if (cleanQuestions.length === 0) {
-    return { error: "Add at least one complete question." };
-  }
-
-  const passScore =
-    Number.isFinite(input.passScore) && input.passScore > 0
-      ? Math.min(100, input.passScore)
-      : 70;
+  const prepared = prepareQuestions(input.questions);
+  if ("error" in prepared) return { error: prepared.error };
 
   const { data: quiz, error } = await supabase
     .from("quizzes")
-    .insert({ module_id: moduleId, title, pass_score: passScore })
+    .insert({ module_id: moduleId, title, pass_score: resolvePassScore(input.passScore) })
     .select()
     .single();
   if (error || !quiz) return { error: "Could not create the quiz." };
 
-  const { error: questionError } = await supabase.from("quiz_questions").insert(
-    cleanQuestions.map((question, index) => ({
-      quiz_id: quiz.id,
-      prompt: question.prompt,
-      options: question.options.filter(Boolean),
-      correct_index: question.correctIndex,
-      position: index,
-    }))
-  );
+  const { error: questionError } = await writeQuestions(supabase, quiz.id, prepared.questions);
   if (questionError) return { error: "Could not save the questions." };
 
   const recipients = await studentsInCourse(courseId);
@@ -310,6 +340,53 @@ export async function createQuiz(
     body: title,
     href: "/learn/course",
   });
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function updateQuiz(
+  courseId: string,
+  quizId: string,
+  input: { title: string; passScore: number; questions: QuizQuestionInput[] }
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const title = input.title.trim();
+  if (!title) return { error: "Give the quiz a title." };
+
+  const prepared = prepareQuestions(input.questions);
+  if ("error" in prepared) return { error: prepared.error };
+
+  const { error: quizError } = await supabase
+    .from("quizzes")
+    .update({ title, pass_score: resolvePassScore(input.passScore) })
+    .eq("id", quizId);
+  if (quizError) return { error: "Could not update the quiz." };
+
+  const { error: deleteError } = await supabase
+    .from("quiz_questions")
+    .delete()
+    .eq("quiz_id", quizId);
+  if (deleteError) return { error: "Could not update the questions." };
+
+  const { error: questionError } = await writeQuestions(supabase, quizId, prepared.questions);
+  if (questionError) return { error: "Could not save the questions." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function deleteQuiz(
+  courseId: string,
+  quizId: string
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase.from("quizzes").delete().eq("id", quizId);
+  if (error) return { error: "Could not delete the quiz." };
 
   revalidatePath(`/tutor/courses/${courseId}`);
   return { error: null };
