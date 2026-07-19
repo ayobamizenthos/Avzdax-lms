@@ -11,6 +11,16 @@ export async function markLessonComplete(lessonId: string, completed: boolean) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in." };
 
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select("is_locked, module:modules(is_locked)")
+    .eq("id", lessonId)
+    .single();
+  const moduleLocked = (lesson?.module as { is_locked: boolean } | null)?.is_locked;
+  if (lesson?.is_locked || moduleLocked) {
+    return { error: "This lesson is locked." };
+  }
+
   if (completed) {
     await supabase
       .from("lesson_progress")
@@ -31,8 +41,22 @@ export async function markLessonComplete(lessonId: string, completed: boolean) {
   return { error: null };
 }
 
+async function quizModuleLocked(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  quizId: string
+) {
+  const { data: quiz } = await supabase
+    .from("quizzes")
+    .select("module:modules(is_locked)")
+    .eq("id", quizId)
+    .single();
+  return (quiz?.module as { is_locked: boolean } | null)?.is_locked ?? false;
+}
+
 export async function getQuizQuestions(quizId: string) {
   const supabase = await createClient();
+  if (await quizModuleLocked(supabase, quizId)) return [];
+
   const { data } = await supabase
     .from("quiz_questions")
     .select("id, prompt, options, position")
@@ -52,6 +76,10 @@ export async function submitQuiz(quizId: string, answers: number[]) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not signed in.", score: 0 };
+
+  if (await quizModuleLocked(supabase, quizId)) {
+    return { error: "This quiz is locked.", score: 0, review: [] };
+  }
 
   const { data: questions } = await supabase
     .from("quiz_questions")

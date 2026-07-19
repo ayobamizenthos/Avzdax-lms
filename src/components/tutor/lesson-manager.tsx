@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { FileText, Loader2, Pencil, PlayCircle, Trash2 } from "lucide-react";
+import { FileText, Loader2, Lock, LockOpen, Pencil, PlayCircle, Trash2 } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { AddResource } from "@/components/tutor/builder-forms";
 import {
   deleteLesson,
   deleteResource,
+  setLessonLock,
   updateLesson,
 } from "@/app/(app)/tutor/actions";
 
@@ -19,6 +20,7 @@ type Lesson = {
   title: string;
   youtube_id: string | null;
   body: string | null;
+  is_locked: boolean;
   resources: Resource[];
 };
 
@@ -90,6 +92,28 @@ export function LessonManager({
       <div className="flex items-center gap-3 text-sm">
         <PlayCircle className="size-4 text-brand" />
         <span className="flex-1 text-ink">{lesson.title}</span>
+        {lesson.is_locked ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-ink/[0.06] px-2 py-0.5 text-xs font-medium text-ink-soft">
+            <Lock className="size-3" />
+            Locked
+          </span>
+        ) : null}
+        <button
+          type="button"
+          onClick={() =>
+            startTransition(() =>
+              setLessonLock(courseId, lesson.id, !lesson.is_locked).then(() => {})
+            )
+          }
+          className="grid size-8 place-items-center rounded-sm text-muted transition-colors hover:bg-ink/[0.05] hover:text-ink"
+          aria-label={lesson.is_locked ? "Unlock lesson" : "Lock lesson"}
+        >
+          {lesson.is_locked ? (
+            <Lock className="size-4" />
+          ) : (
+            <LockOpen className="size-4" />
+          )}
+        </button>
         <button
           type="button"
           onClick={() => setEditing(true)}

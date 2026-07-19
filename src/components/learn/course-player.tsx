@@ -8,6 +8,7 @@ import {
   FileText,
   ListChecks,
   Loader2,
+  Lock,
 } from "lucide-react";
 
 import { cn } from "@/lib/cn";
@@ -30,8 +31,9 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
   );
 
   const [selection, setSelection] = useState<Selection | null>(() => {
-    const firstIncomplete = allLessons.find((lesson) => !lesson.completed);
-    const target = firstIncomplete ?? allLessons[0];
+    const available = allLessons.filter((lesson) => !lesson.locked);
+    const firstIncomplete = available.find((lesson) => !lesson.completed);
+    const target = firstIncomplete ?? available[0];
     return target ? { kind: "lesson", id: target.id } : null;
   });
   const [pending, startTransition] = useTransition();
@@ -102,22 +104,32 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
                       <li key={lesson.id}>
                         <button
                           type="button"
+                          disabled={lesson.locked}
                           onClick={() =>
                             setSelection({ kind: "lesson", id: lesson.id })
                           }
                           className={cn(
                             "flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm transition-colors",
-                            isActive
-                              ? "bg-brand-tint text-brand-deep"
-                              : "text-ink-soft hover:bg-ink/[0.04]"
+                            lesson.locked
+                              ? "cursor-not-allowed text-muted"
+                              : isActive
+                                ? "bg-brand-tint text-brand-deep"
+                                : "text-ink-soft hover:bg-ink/[0.04]"
                           )}
                         >
-                          {lesson.completed ? (
+                          {lesson.locked ? (
+                            <Lock className="size-4 shrink-0 text-muted" />
+                          ) : lesson.completed ? (
                             <CircleCheck className="size-4 shrink-0 text-brand" />
                           ) : (
                             <Circle className="size-4 shrink-0 text-line-strong" />
                           )}
-                          <span className="line-clamp-2">{lesson.title}</span>
+                          <span className="line-clamp-2 flex-1">{lesson.title}</span>
+                          {lesson.locked ? (
+                            <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted">
+                              Locked
+                            </span>
+                          ) : null}
                         </button>
                       </li>
                     );
@@ -126,20 +138,31 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
                     <li>
                       <button
                         type="button"
+                        disabled={unit.locked}
                         onClick={() =>
                           setSelection({ kind: "quiz", id: unit.quiz!.id })
                         }
                         className={cn(
                           "flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm transition-colors",
-                          selection?.kind === "quiz" &&
-                            selection.id === unit.quiz.id
-                            ? "bg-brand-tint text-brand-deep"
-                            : "text-ink-soft hover:bg-ink/[0.04]"
+                          unit.locked
+                            ? "cursor-not-allowed text-muted"
+                            : selection?.kind === "quiz" &&
+                                selection.id === unit.quiz.id
+                              ? "bg-brand-tint text-brand-deep"
+                              : "text-ink-soft hover:bg-ink/[0.04]"
                         )}
                       >
-                        <ListChecks className="size-4 shrink-0 text-gold" />
+                        {unit.locked ? (
+                          <Lock className="size-4 shrink-0 text-muted" />
+                        ) : (
+                          <ListChecks className="size-4 shrink-0 text-gold" />
+                        )}
                         <span className="flex-1">{unit.quiz.title}</span>
-                        {unit.bestScore !== null ? (
+                        {unit.locked ? (
+                          <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted">
+                            Locked
+                          </span>
+                        ) : unit.bestScore !== null ? (
                           <span className="text-xs font-semibold text-brand">
                             {unit.bestScore}%
                           </span>

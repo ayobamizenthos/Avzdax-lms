@@ -448,6 +448,106 @@ export async function deleteModule(
   return { error: null };
 }
 
+export async function updateModule(
+  courseId: string,
+  moduleId: string,
+  title: string
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+  const clean = title.trim();
+  if (!clean) return { error: "Give the module a title." };
+
+  const { error } = await supabase
+    .from("modules")
+    .update({ title: clean })
+    .eq("id", moduleId);
+  if (error) return { error: "Could not update the module." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function setModuleLock(
+  courseId: string,
+  moduleId: string,
+  locked: boolean
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("modules")
+    .update({ is_locked: locked })
+    .eq("id", moduleId);
+  if (error) return { error: "Could not update the module." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function setLessonLock(
+  courseId: string,
+  lessonId: string,
+  locked: boolean
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("lessons")
+    .update({ is_locked: locked })
+    .eq("id", lessonId);
+  if (error) return { error: "Could not update the lesson." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function updateAssignment(
+  courseId: string,
+  assignmentId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const title = String(formData.get("title") ?? "").trim();
+  const instructions = String(formData.get("instructions") ?? "").trim();
+  const dueAt = String(formData.get("due_at") ?? "").trim();
+  if (!title) return { error: "Give the assignment a title." };
+
+  const { error } = await supabase
+    .from("assignments")
+    .update({
+      title,
+      instructions: instructions || null,
+      due_at: dueAt ? new Date(dueAt).toISOString() : null,
+    })
+    .eq("id", assignmentId);
+  if (error) return { error: "Could not update the assignment." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function deleteAssignment(
+  courseId: string,
+  assignmentId: string
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("assignments")
+    .delete()
+    .eq("id", assignmentId);
+  if (error) return { error: "Could not delete the assignment." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
 export async function deleteResource(
   courseId: string,
   resourceId: string

@@ -7,6 +7,7 @@ export type LessonNode = {
   body: string | null;
   position: number;
   completed: boolean;
+  locked: boolean;
   resources: { id: string; name: string; file_url: string }[];
 };
 
@@ -14,6 +15,7 @@ export type ModuleNode = {
   id: string;
   title: string;
   position: number;
+  locked: boolean;
   lessons: LessonNode[];
   quiz: { id: string; title: string; pass_score: number } | null;
   bestScore: number | null;
@@ -51,8 +53,8 @@ export async function getEnrolledCourse(
     .select(
       `id, title, summary, cover_url,
        modules (
-         id, title, position,
-         lessons ( id, title, youtube_id, body, position, resources ( id, name, file_url ) ),
+         id, title, position, is_locked,
+         lessons ( id, title, youtube_id, body, position, is_locked, resources ( id, name, file_url ) ),
          quizzes ( id, title, pass_score )
        )`
     )
@@ -82,31 +84,35 @@ export async function getEnrolledCourse(
     .sort((a, b) => a.position - b.position)
     .map((unit) => {
       const quiz = unit.quizzes?.[0] ?? null;
+      const moduleLocked = unit.is_locked;
       return {
         id: unit.id,
         title: unit.title,
         position: unit.position,
+        locked: moduleLocked,
         quiz: quiz ? { id: quiz.id, title: quiz.title, pass_score: quiz.pass_score } : null,
         bestScore: quiz ? bestByQuiz.get(quiz.id) ?? null : null,
         lessons: (unit.lessons ?? [])
           .sort((a, b) => a.position - b.position)
-          .map((lesson) => ({
-            id: lesson.id,
-            title: lesson.title,
-            youtube_id: lesson.youtube_id,
-            body: lesson.body,
-            position: lesson.position,
-            completed: completed.has(lesson.id),
-            resources: lesson.resources ?? [],
-          })),
+          .map((lesson) => {
+            const locked = moduleLocked || lesson.is_locked;
+            return {
+              id: lesson.id,
+              title: lesson.title,
+              youtube_id: locked ? null : lesson.youtube_id,
+              body: locked ? null : lesson.body,
+              position: lesson.position,
+              completed: completed.has(lesson.id),
+              locked,
+              resources: locked ? [] : lesson.resources ?? [],
+            };
+          }),
       };
     });
 
-  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0);
-  const completedLessons = modules.reduce(
-    (sum, m) => sum + m.lessons.filter((l) => l.completed).length,
-    0
-  );
+  const unlockedLessons = modules.flatMap((m) => m.lessons.filter((l) => !l.locked));
+  const totalLessons = unlockedLessons.length;
+  const completedLessons = unlockedLessons.filter((l) => l.completed).length;
 
   return {
     id: course.id,

@@ -313,6 +313,7 @@ export type Database = {
           body: string | null
           created_at: string
           id: string
+          is_locked: boolean
           module_id: string
           position: number
           title: string
@@ -322,6 +323,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: string
+          is_locked?: boolean
           module_id: string
           position?: number
           title: string
@@ -331,6 +333,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: string
+          is_locked?: boolean
           module_id?: string
           position?: number
           title?: string
@@ -351,6 +354,7 @@ export type Database = {
           course_id: string
           created_at: string
           id: string
+          is_locked: boolean
           position: number
           title: string
         }
@@ -358,6 +362,7 @@ export type Database = {
           course_id: string
           created_at?: string
           id?: string
+          is_locked?: boolean
           position?: number
           title: string
         }
@@ -365,6 +370,7 @@ export type Database = {
           course_id?: string
           created_at?: string
           id?: string
+          is_locked?: boolean
           position?: number
           title?: string
         }

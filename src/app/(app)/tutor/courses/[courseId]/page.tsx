@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FileText, ListChecks } from "lucide-react";
+import { ListChecks } from "lucide-react";
 
 import { requireRole } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -11,11 +11,12 @@ import {
   AddAssignment,
   AddLesson,
   AddModule,
-  DeleteModule,
   PublishToggle,
 } from "@/components/tutor/builder-forms";
 import { QuizEditor } from "@/components/tutor/quiz-editor";
 import { LessonManager } from "@/components/tutor/lesson-manager";
+import { ModuleHeader } from "@/components/tutor/module-header";
+import { AssignmentManager } from "@/components/tutor/assignment-manager";
 
 export const metadata: Metadata = {
   title: "Course builder",
@@ -34,9 +35,9 @@ export default async function CourseBuilder({
     .from("courses")
     .select(
       `id, title, summary, is_published,
-       modules ( id, title, position,
-         lessons ( id, title, youtube_id, body, position, resources ( id, name ) ),
-         assignments ( id, title ),
+       modules ( id, title, position, is_locked,
+         lessons ( id, title, youtube_id, body, position, is_locked, resources ( id, name ) ),
+         assignments ( id, title, instructions, due_at ),
          quizzes ( id, title, pass_score,
            quiz_questions ( id, prompt, options, correct_index, position ) )
        )`
@@ -68,15 +69,14 @@ export default async function CourseBuilder({
           return (
             <Card key={courseModule.id}>
               <CardBody>
-                <div className="flex items-center justify-between gap-3">
-                  <h2 className="font-display text-lg text-ink">
-                    Module {index + 1} · {courseModule.title}
-                  </h2>
-                  <div className="flex items-center gap-2">
-                    <Badge>{lessons.length} lessons</Badge>
-                    <DeleteModule courseId={course.id} moduleId={courseModule.id} />
-                  </div>
-                </div>
+                <ModuleHeader
+                  courseId={course.id}
+                  moduleId={courseModule.id}
+                  index={index}
+                  title={courseModule.title}
+                  isLocked={courseModule.is_locked}
+                  lessonCount={lessons.length}
+                />
 
                 <div className="mt-4 space-y-3">
                   {lessons.map((lesson) => (
@@ -88,14 +88,11 @@ export default async function CourseBuilder({
                   ))}
 
                   {(courseModule.assignments ?? []).map((assignment) => (
-                    <div
+                    <AssignmentManager
                       key={assignment.id}
-                      className="flex items-center gap-3 rounded-sm border border-line px-3.5 py-2.5 text-sm"
-                    >
-                      <FileText className="size-4 text-gold" />
-                      <span className="flex-1 text-ink">{assignment.title}</span>
-                      <Badge tone="gold">Assignment</Badge>
-                    </div>
+                      courseId={course.id}
+                      assignment={assignment}
+                    />
                   ))}
 
                   {quiz ? (
