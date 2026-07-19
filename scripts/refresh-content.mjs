@@ -33,6 +33,15 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
+if (process.env.CONTENT_RESET !== "yes") {
+  console.error(
+    "Refusing to run. This replaces every module, lesson, quiz and material on the\n" +
+      "five courses, which permanently deletes any content tutors have added.\n" +
+      "The platform is live. Run with CONTENT_RESET=yes only on a throwaway database."
+  );
+  process.exit(1);
+}
+
 function shuffleOptions(options, correctIndex) {
   const paired = options.map((option, index) => ({ option, correct: index === correctIndex }));
   for (let i = paired.length - 1; i > 0; i--) {
