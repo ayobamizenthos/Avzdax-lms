@@ -251,10 +251,21 @@ export function QuizEditor({
             Download template
           </a>
         </div>
-        <p className="mt-1.5 text-xs text-muted">
-          Columns: Question, Option A, Option B, Option C, Option D, Correct Answer
-          (A to D). Uploading replaces the questions below.
-        </p>
+        <div className="mt-1.5 text-xs text-muted">
+          <p className="font-medium text-ink-soft">
+            Prefer to add many questions at once? Upload a CSV instead of typing.
+          </p>
+          <ol className="mt-1 list-decimal space-y-0.5 pl-4">
+            <li>Click Download template and open it in Excel or Google Sheets.</li>
+            <li>
+              Fill each row: Question, Option A, B, C, D, and the Correct Answer
+              (just the letter A, B, C or D).
+            </li>
+            <li>Save as CSV, then upload it here. Questions fill in with the correct
+              answer already marked. Review and save.</li>
+          </ol>
+          <p className="mt-1">Uploading replaces the questions below.</p>
+        </div>
         {importNote ? (
           <p className="mt-1 text-xs font-medium text-brand">{importNote}</p>
         ) : null}
