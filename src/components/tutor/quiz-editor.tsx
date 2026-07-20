@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, ListChecks, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Check,
+  ListChecks,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+} from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
@@ -25,6 +33,76 @@ function emptyQuestion(): DraftQuestion {
   return { prompt: "", options: ["", "", "", ""], correctIndex: -1 };
 }
 
+const CSV_TEMPLATE =
+  "data:text/csv;charset=utf-8," +
+  encodeURIComponent(
+    "Question,Option A,Option B,Option C,Option D,Correct Answer\n" +
+      '"What is 2 + 2?","3","4","5","6",B\n' +
+      '"Capital of France?","Paris","Lagos","Rome","Cairo",A\n'
+  );
+
+function parseCsvRows(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+    } else if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(field);
+      field = "";
+    } else if (char === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+    } else if (char !== "\r") {
+      field += char;
+    }
+  }
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function rowsToQuestions(rows: string[][]): DraftQuestion[] {
+  const questions: DraftQuestion[] = [];
+  for (const raw of rows) {
+    const cells = raw.map((cell) => (cell ?? "").trim());
+    if (cells.every((cell) => !cell)) continue;
+    const [prompt, a, b, c, d, correct] = cells;
+    if (/^question$/i.test(prompt)) continue;
+    if (!prompt) continue;
+
+    const options = [a ?? "", b ?? "", c ?? "", d ?? ""];
+    const letter = (correct ?? "").toUpperCase();
+    let correctIndex = ["A", "B", "C", "D"].indexOf(letter);
+    if (correctIndex < 0) {
+      correctIndex = options.findIndex(
+        (option) => option && option.toLowerCase() === (correct ?? "").toLowerCase()
+      );
+    }
+    questions.push({ prompt, options, correctIndex });
+  }
+  return questions;
+}
+
 export function QuizEditor({
   courseId,
   moduleId,
@@ -42,7 +120,30 @@ export function QuizEditor({
     quiz?.questions.length ? quiz.questions : [emptyQuestion()]
   );
   const [error, setError] = useState<string | null>(null);
+  const [importNote, setImportNote] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  async function handleCsv(file: File) {
+    setImportNote(null);
+    setError(null);
+    try {
+      const parsed = rowsToQuestions(parseCsvRows(await file.text()));
+      if (parsed.length === 0) {
+        setError("No questions found. Check the file matches the template.");
+        return;
+      }
+      setQuestions(parsed);
+      const missing = parsed.filter((question) => question.correctIndex < 0).length;
+      setImportNote(
+        `Loaded ${parsed.length} question${parsed.length === 1 ? "" : "s"}.` +
+          (missing > 0
+            ? ` ${missing} need a correct answer marked before saving.`
+            : " Review and save.")
+      );
+    } catch {
+      setError("Could not read that file. Please upload a valid CSV.");
+    }
+  }
 
   function updateQuestion(index: number, patch: Partial<DraftQuestion>) {
     setQuestions((prev) =>
@@ -124,6 +225,39 @@ export function QuizEditor({
             onChange={(event) => setPassScore(Number(event.target.value))}
           />
         </Field>
+      </div>
+
+      <div className="rounded-sm border border-dashed border-line-strong bg-surface p-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-brand hover:underline">
+            <Upload className="size-4" />
+            Bulk upload questions (CSV)
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void handleCsv(file);
+                event.target.value = "";
+              }}
+            />
+          </label>
+          <a
+            href={CSV_TEMPLATE}
+            download="quiz-template.csv"
+            className="text-xs font-medium text-muted hover:text-ink hover:underline"
+          >
+            Download template
+          </a>
+        </div>
+        <p className="mt-1.5 text-xs text-muted">
+          Columns: Question, Option A, Option B, Option C, Option D, Correct Answer
+          (A to D). Uploading replaces the questions below.
+        </p>
+        {importNote ? (
+          <p className="mt-1 text-xs font-medium text-brand">{importNote}</p>
+        ) : null}
       </div>
 
       {questions.map((question, qIndex) => (
