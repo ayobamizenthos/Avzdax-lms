@@ -504,6 +504,42 @@ export async function setLessonLock(
   return { error: null };
 }
 
+export async function setQuizLock(
+  courseId: string,
+  quizId: string,
+  locked: boolean
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("quizzes")
+    .update({ is_locked: locked })
+    .eq("id", quizId);
+  if (error) return { error: "Could not update the quiz." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
+export async function setAssignmentLock(
+  courseId: string,
+  assignmentId: string,
+  locked: boolean
+): Promise<ActionResult> {
+  const { supabase, userId } = await requireStaff();
+  if (!userId) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("assignments")
+    .update({ is_locked: locked })
+    .eq("id", assignmentId);
+  if (error) return { error: "Could not update the assignment." };
+
+  revalidatePath(`/tutor/courses/${courseId}`);
+  return { error: null };
+}
+
 export async function updateAssignment(
   courseId: string,
   assignmentId: string,

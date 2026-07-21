@@ -17,7 +17,7 @@ export type ModuleNode = {
   position: number;
   locked: boolean;
   lessons: LessonNode[];
-  quiz: { id: string; title: string; pass_score: number } | null;
+  quiz: { id: string; title: string; pass_score: number; locked: boolean } | null;
   bestScore: number | null;
 };
 
@@ -55,7 +55,7 @@ export async function getEnrolledCourse(
        modules (
          id, title, position, is_locked,
          lessons ( id, title, youtube_id, body, position, is_locked, resources ( id, name, file_url ) ),
-         quizzes ( id, title, pass_score )
+         quizzes ( id, title, pass_score, is_locked )
        )`
     )
     .eq("id", enrollment.course_id)
@@ -90,7 +90,14 @@ export async function getEnrolledCourse(
         title: unit.title,
         position: unit.position,
         locked: moduleLocked,
-        quiz: quiz ? { id: quiz.id, title: quiz.title, pass_score: quiz.pass_score } : null,
+        quiz: quiz
+          ? {
+              id: quiz.id,
+              title: quiz.title,
+              pass_score: quiz.pass_score,
+              locked: moduleLocked || quiz.is_locked,
+            }
+          : null,
         bestScore: quiz ? bestByQuiz.get(quiz.id) ?? null : null,
         lessons: (unit.lessons ?? [])
           .sort((a, b) => a.position - b.position)

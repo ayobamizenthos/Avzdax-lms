@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { deleteAssignment, updateAssignment } from "@/app/(app)/tutor/actions";
+import { LockToggle } from "@/components/tutor/lock-toggle";
 
 type Assignment = {
   id: string;
   title: string;
   instructions: string | null;
   due_at: string | null;
+  is_locked: boolean;
 };
 
 function toLocalInput(iso: string | null) {
@@ -91,6 +93,12 @@ export function AssignmentManager({
       <FileText className="size-4 text-gold" />
       <span className="flex-1 text-ink">{assignment.title}</span>
       <Badge tone="gold">Assignment</Badge>
+      <LockToggle
+        courseId={courseId}
+        itemId={assignment.id}
+        kind="assignment"
+        locked={assignment.is_locked}
+      />
       <button
         type="button"
         onClick={() => setEditing(true)}

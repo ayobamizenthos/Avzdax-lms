@@ -23,6 +23,17 @@ export async function submitAssignment(
   const assignmentId = String(formData.get("assignment_id") ?? "");
   if (!assignmentId) return { error: "Missing assignment.", ok: false };
 
+  const { data: lockCheck } = await supabase
+    .from("assignments")
+    .select("is_locked, modules(is_locked)")
+    .eq("id", assignmentId)
+    .single();
+  const moduleLocked = (lockCheck?.modules as { is_locked: boolean } | null)
+    ?.is_locked;
+  if (lockCheck?.is_locked || moduleLocked) {
+    return { error: "This assignment is locked.", ok: false };
+  }
+
   const body = String(formData.get("body") ?? "").trim();
 
   const links = formData

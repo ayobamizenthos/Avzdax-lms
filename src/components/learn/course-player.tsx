@@ -138,13 +138,13 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
                     <li>
                       <button
                         type="button"
-                        disabled={unit.locked}
+                        disabled={unit.quiz.locked}
                         onClick={() =>
                           setSelection({ kind: "quiz", id: unit.quiz!.id })
                         }
                         className={cn(
                           "flex w-full items-center gap-2.5 rounded-sm px-2 py-2 text-left text-sm transition-colors",
-                          unit.locked
+                          unit.quiz.locked
                             ? "cursor-not-allowed text-muted"
                             : selection?.kind === "quiz" &&
                                 selection.id === unit.quiz.id
@@ -152,13 +152,13 @@ export function CoursePlayer({ course }: { course: CourseTree }) {
                               : "text-ink-soft hover:bg-ink/[0.04]"
                         )}
                       >
-                        {unit.locked ? (
+                        {unit.quiz.locked ? (
                           <Lock className="size-4 shrink-0 text-muted" />
                         ) : (
                           <ListChecks className="size-4 shrink-0 text-gold" />
                         )}
                         <span className="flex-1">{unit.quiz.title}</span>
-                        {unit.locked ? (
+                        {unit.quiz.locked ? (
                           <span className="text-[0.65rem] font-medium uppercase tracking-wide text-muted">
                             Locked
                           </span>

@@ -17,6 +17,7 @@ import { QuizEditor } from "@/components/tutor/quiz-editor";
 import { LessonManager } from "@/components/tutor/lesson-manager";
 import { ModuleHeader } from "@/components/tutor/module-header";
 import { AssignmentManager } from "@/components/tutor/assignment-manager";
+import { LockToggle } from "@/components/tutor/lock-toggle";
 
 export const metadata: Metadata = {
   title: "Course builder",
@@ -37,8 +38,8 @@ export default async function CourseBuilder({
       `id, title, summary, is_published,
        modules ( id, title, position, is_locked,
          lessons ( id, title, youtube_id, body, position, is_locked, resources ( id, name ) ),
-         assignments ( id, title, instructions, due_at ),
-         quizzes ( id, title, pass_score,
+         assignments ( id, title, instructions, due_at, is_locked ),
+         quizzes ( id, title, pass_score, is_locked,
            quiz_questions ( id, prompt, options, correct_index, position ) )
        )`
     )
@@ -103,6 +104,12 @@ export default async function CourseBuilder({
                         <Badge tone="brand">
                           {quiz.quiz_questions?.length ?? 0} questions
                         </Badge>
+                        <LockToggle
+                          courseId={course.id}
+                          itemId={quiz.id}
+                          kind="quiz"
+                          locked={quiz.is_locked}
+                        />
                       </div>
                       <div className="mt-2">
                         <QuizEditor

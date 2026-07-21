@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { format, isPast } from "date-fns";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, Lock } from "lucide-react";
 
 import { requireRole } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -31,10 +31,13 @@ export default async function AssignmentsPage() {
 
   const supabase = await createClient();
   const moduleIds = course.modules.map((unit) => unit.id);
+  const lockedModules = new Set(
+    course.modules.filter((unit) => unit.locked).map((unit) => unit.id)
+  );
 
   const { data: assignments } = await supabase
     .from("assignments")
-    .select("id, title, instructions, due_at, module_id")
+    .select("id, title, instructions, due_at, module_id, is_locked")
     .in("module_id", moduleIds)
     .order("due_at", { ascending: true });
 
@@ -66,10 +69,31 @@ export default async function AssignmentsPage() {
           {assignments.map((assignment) => {
             const submission = byAssignment.get(assignment.id);
             const graded = submission?.status === "graded";
+            const locked =
+              assignment.is_locked || lockedModules.has(assignment.module_id);
             const overdue =
               assignment.due_at &&
               isPast(new Date(assignment.due_at)) &&
               !submission;
+
+            if (locked) {
+              return (
+                <Card key={assignment.id}>
+                  <CardBody>
+                    <div className="flex items-center gap-3">
+                      <Lock className="size-4 text-muted" />
+                      <h2 className="flex-1 font-display text-lg text-muted">
+                        {assignment.title}
+                      </h2>
+                      <Badge>Locked</Badge>
+                    </div>
+                    <p className="mt-2 text-sm text-muted">
+                      Your tutor will unlock this assignment when it&rsquo;s ready.
+                    </p>
+                  </CardBody>
+                </Card>
+              );
+            }
 
             return (
               <Card key={assignment.id}>

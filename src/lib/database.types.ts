@@ -43,6 +43,7 @@ export type Database = {
           due_at: string | null
           id: string
           instructions: string | null
+          is_locked: boolean
           module_id: string
           title: string
         }
@@ -51,6 +52,7 @@ export type Database = {
           due_at?: string | null
           id?: string
           instructions?: string | null
+          is_locked?: boolean
           module_id: string
           title: string
         }
@@ -59,6 +61,7 @@ export type Database = {
           due_at?: string | null
           id?: string
           instructions?: string | null
+          is_locked?: boolean
           module_id?: string
           title?: string
         }
@@ -569,6 +572,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_locked: boolean
           module_id: string
           pass_score: number
           title: string
@@ -576,6 +580,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           module_id: string
           pass_score?: number
           title: string
@@ -583,6 +588,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_locked?: boolean
           module_id?: string
           pass_score?: number
           title?: string
