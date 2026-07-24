@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play, TriangleAlert } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
@@ -50,6 +50,19 @@ function loadYouTubeApi() {
   return apiReady;
 }
 
+function errorMessage(code: number) {
+  if (code === 101 || code === 150) {
+    return "The video owner has disabled playback on other sites. On YouTube, open the video, go to its settings and allow embedding.";
+  }
+  if (code === 100) {
+    return "This video can't be found. It may be set to Private or removed. Set it to Unlisted and check the link.";
+  }
+  if (code === 2) {
+    return "The video link looks invalid. Paste the full YouTube link again.";
+  }
+  return "This video can't be played right now. If it was just uploaded, give YouTube a few minutes to finish processing.";
+}
+
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds)) return "0:00";
   const minutes = Math.floor(seconds / 60);
@@ -71,9 +84,11 @@ export function YouTubePlayer({
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    setError(null);
 
     loadYouTubeApi().then(() => {
       if (cancelled || !hostRef.current || !window.YT) return;
@@ -98,10 +113,14 @@ export function YouTubePlayer({
             if (event.data === state.PLAYING) {
               setPlaying(true);
               setStarted(true);
+              setError(null);
               setDuration(event.target.getDuration());
             } else {
               setPlaying(false);
             }
+          },
+          onError: (event: { data: number }) => {
+            setError(errorMessage(event.data));
           },
         },
       });
@@ -149,6 +168,18 @@ export function YouTubePlayer({
       <div className="pointer-events-none absolute inset-0">
         <div ref={hostRef} className="size-full" />
       </div>
+
+      {error ? (
+        <div className="absolute inset-0 z-30 grid place-items-center bg-black/90 px-6 text-center">
+          <div className="max-w-sm">
+            <TriangleAlert className="mx-auto size-8 text-gold" />
+            <p className="mt-3 text-sm font-medium text-white">
+              This video isn&rsquo;t playing
+            </p>
+            <p className="mt-1.5 text-sm leading-relaxed text-white/70">{error}</p>
+          </div>
+        </div>
+      ) : null}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-black via-black/60 to-transparent" />
 
