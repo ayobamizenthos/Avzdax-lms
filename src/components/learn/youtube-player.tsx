@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pause, Play, TriangleAlert } from "lucide-react";
+import { Pause, Play, TriangleAlert, Volume2, VolumeX } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
@@ -11,6 +11,9 @@ type YouTubePlayerInstance = {
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  setVolume: (volume: number) => void;
+  mute: () => void;
+  unMute: () => void;
   destroy: () => void;
 };
 
@@ -84,6 +87,8 @@ export function YouTubePlayer({
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(100);
+  const [muted, setMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -105,6 +110,8 @@ export function YouTubePlayer({
         },
         events: {
           onReady: (event: { target: YouTubePlayerInstance }) => {
+            event.target.unMute();
+            event.target.setVolume(100);
             setDuration(event.target.getDuration());
           },
           onStateChange: (event: { data: number; target: YouTubePlayerInstance }) => {
@@ -161,7 +168,36 @@ export function YouTubePlayer({
     setCurrent(value);
   }, []);
 
+  const changeVolume = useCallback((value: number) => {
+    const player = playerRef.current;
+    setVolumeState(value);
+    setMuted(value === 0);
+    if (!player) return;
+    if (value === 0) {
+      player.mute();
+    } else {
+      player.unMute();
+      player.setVolume(value);
+    }
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (muted || volume === 0) {
+      const restored = volume === 0 ? 100 : volume;
+      player.unMute();
+      player.setVolume(restored);
+      setVolumeState(restored);
+      setMuted(false);
+    } else {
+      player.mute();
+      setMuted(true);
+    }
+  }, [muted, volume]);
+
   const progress = duration > 0 ? (current / duration) * 100 : 0;
+  const volumeLevel = muted ? 0 : volume;
 
   return (
     <div className="group relative aspect-video w-full overflow-hidden rounded-md bg-black">
@@ -235,6 +271,34 @@ export function YouTubePlayer({
         <span className="shrink-0 font-mono text-xs tabular-nums text-white/80">
           {formatTime(current)} / {formatTime(duration)}
         </span>
+
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={volumeLevel === 0 ? "Unmute" : "Mute"}
+            className="grid size-9 shrink-0 place-items-center rounded-full text-white transition-colors hover:bg-white/15"
+          >
+            {volumeLevel === 0 ? (
+              <VolumeX className="size-4" />
+            ) : (
+              <Volume2 className="size-4" />
+            )}
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={volumeLevel}
+            onChange={(event) => changeVolume(Number(event.target.value))}
+            aria-label="Volume"
+            className="h-1 w-16 cursor-pointer appearance-none rounded-full outline-none [&::-webkit-slider-thumb]:size-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+            style={{
+              background: `linear-gradient(to right, #ffffff ${volumeLevel}%, rgba(255,255,255,0.25) ${volumeLevel}%)`,
+            }}
+          />
+        </div>
       </div>
     </div>
   );
