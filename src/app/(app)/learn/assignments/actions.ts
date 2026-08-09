@@ -46,27 +46,29 @@ export async function submitAssignment(
     }
   }
 
-  const files = formData
-    .getAll("file")
-    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+  let uploaded: { path: string; name: string }[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("files_meta") ?? "[]"));
+    if (Array.isArray(parsed)) {
+      uploaded = parsed
+        .filter(
+          (entry) =>
+            entry &&
+            typeof entry.path === "string" &&
+            typeof entry.name === "string" &&
+            entry.path.startsWith(`${user.id}/`)
+        )
+        .map((entry) => ({ path: entry.path, name: entry.name }));
+    }
+  } catch {
+    return { error: "Something went wrong with your attachment. Try again.", ok: false };
+  }
 
-  if (!body && files.length === 0 && links.length === 0) {
+  if (!body && uploaded.length === 0 && links.length === 0) {
     return {
       error: "Add a written response, a file or a link before submitting.",
       ok: false,
     };
-  }
-
-  const uploaded: { path: string; name: string }[] = [];
-  for (const file of files) {
-    const path = `${user.id}/${assignmentId}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from("submissions")
-      .upload(path, file, { upsert: true });
-    if (uploadError) {
-      return { error: `Upload failed for ${file.name}. Try a smaller file.`, ok: false };
-    }
-    uploaded.push({ path, name: file.name });
   }
 
   const kind: "text" | "file" | "link" = body

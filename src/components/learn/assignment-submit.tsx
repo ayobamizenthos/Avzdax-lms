@@ -1,38 +1,89 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { Loader2, Plus, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
+import { createClient } from "@/lib/supabase/client";
 import { playSuccess } from "@/lib/notification-sound";
-import {
-  submitAssignment,
-  type SubmitState,
-} from "@/app/(app)/learn/assignments/actions";
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? <Loader2 className="size-4 animate-spin" /> : "Submit work"}
-    </Button>
-  );
-}
+import { submitAssignment } from "@/app/(app)/learn/assignments/actions";
 
 export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
   const [links, setLinks] = useState<string[]>([""]);
-  const [state, formAction] = useActionState<SubmitState, FormData>(
-    submitAssignment,
-    { error: null, ok: false }
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "uploading" | "saving" | "done">(
+    "idle"
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (state.ok) playSuccess();
-  }, [state.ok]);
+    if (status === "done") playSuccess();
+  }, [status]);
 
-  if (state.ok) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+
+    const form = event.currentTarget;
+    const body = (form.elements.namedItem("body") as HTMLTextAreaElement).value.trim();
+    const files = Array.from(fileInputRef.current?.files ?? []);
+    const cleanLinks = links.map((link) => link.trim()).filter(Boolean);
+
+    if (!body && files.length === 0 && cleanLinks.length === 0) {
+      setError("Add a written response, a file or a link before submitting.");
+      return;
+    }
+    for (const link of cleanLinks) {
+      if (!/^https?:\/\//i.test(link)) {
+        setError(`"${link}" is not a valid link. Links must start with http.`);
+        return;
+      }
+    }
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      setError("Your session expired. Sign in again.");
+      return;
+    }
+
+    const uploaded: { path: string; name: string }[] = [];
+    if (files.length > 0) {
+      setStatus("uploading");
+      for (const file of files) {
+        const path = `${user.id}/${assignmentId}/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("submissions")
+          .upload(path, file, { upsert: true });
+        if (uploadError) {
+          setStatus("idle");
+          setError(`Upload failed for ${file.name}. Please try again.`);
+          return;
+        }
+        uploaded.push({ path, name: file.name });
+      }
+    }
+
+    setStatus("saving");
+    const payload = new FormData();
+    payload.set("assignment_id", assignmentId);
+    payload.set("body", body);
+    payload.set("files_meta", JSON.stringify(uploaded));
+    for (const link of cleanLinks) payload.append("link_url", link);
+
+    const result = await submitAssignment({ error: null, ok: false }, payload);
+    if (result.ok) {
+      setStatus("done");
+    } else {
+      setStatus("idle");
+      setError(result.error ?? "Could not save your submission.");
+    }
+  }
+
+  if (status === "done") {
     return (
       <p className="rounded-sm border border-brand/25 bg-brand-tint px-4 py-3 text-sm text-brand-deep">
         Submitted. Your tutor will review it shortly.
@@ -40,10 +91,10 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
     );
   }
 
-  return (
-    <form action={formAction} className="space-y-5">
-      <input type="hidden" name="assignment_id" value={assignmentId} />
+  const busy = status === "uploading" || status === "saving";
 
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div>
         <Label htmlFor={`body-${assignmentId}`}>Written response</Label>
         <Textarea
@@ -56,10 +107,8 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
 
       <div>
         <Label>Attachments</Label>
-        <Input name="file" type="file" multiple className="pt-2.5" />
-        <p className="mt-1.5 text-sm text-muted">
-          Attach one or more files.
-        </p>
+        <Input ref={fileInputRef} name="file" type="file" multiple className="pt-2.5" />
+        <p className="mt-1.5 text-sm text-muted">Attach one or more files.</p>
       </div>
 
       <div>
@@ -105,11 +154,18 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
         </button>
       </div>
 
-      {state.error ? (
-        <p className="text-sm text-danger">{state.error}</p>
-      ) : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
 
-      <SubmitButton />
+      <Button type="submit" disabled={busy}>
+        {busy ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="size-4 animate-spin" />
+            {status === "uploading" ? "Uploading files" : "Submitting"}
+          </span>
+        ) : (
+          "Submit work"
+        )}
+      </Button>
 
       <p className="text-xs text-muted">
         Submit any combination of written text, files and links.
