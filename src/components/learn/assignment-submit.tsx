@@ -54,13 +54,22 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
     if (files.length > 0) {
       setStatus("uploading");
       for (const file of files) {
-        const path = `${user.id}/${assignmentId}/${Date.now()}-${file.name}`;
+        const safeName = file.name.replace(/[^\w.\- ]+/g, "_");
+        const path = `${user.id}/${assignmentId}/${Date.now()}-${safeName}`;
         const { error: uploadError } = await supabase.storage
           .from("submissions")
-          .upload(path, file, { upsert: true });
+          .upload(path, file, {
+            upsert: true,
+            contentType: file.type || "application/octet-stream",
+          });
         if (uploadError) {
           setStatus("idle");
-          setError(`Upload failed for ${file.name}. Please try again.`);
+          const reason =
+            (uploadError as { message?: string }).message ?? "unknown error";
+          const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+          setError(
+            `Upload failed for ${file.name} (${sizeMb} MB): ${reason}. Check your connection and try again.`
+          );
           return;
         }
         uploaded.push({ path, name: file.name });
