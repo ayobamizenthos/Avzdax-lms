@@ -12,10 +12,13 @@ import { submitAssignment } from "@/app/(app)/learn/assignments/actions";
 export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
   const [links, setLinks] = useState<string[]>([""]);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "saving" | "done">(
     "idle"
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_FILE_MB = 50;
 
   useEffect(() => {
     if (status === "done") playSuccess();
@@ -52,28 +55,56 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
 
     const uploaded: { path: string; name: string }[] = [];
     if (files.length > 0) {
+      const oversized = files.find((file) => file.size > MAX_FILE_MB * 1024 * 1024);
+      if (oversized) {
+        const sizeMb = (oversized.size / (1024 * 1024)).toFixed(1);
+        setError(
+          `"${oversized.name}" is ${sizeMb} MB, above the ${MAX_FILE_MB} MB limit. Compress it or share it as a link instead.`
+        );
+        return;
+      }
+
       setStatus("uploading");
       for (const file of files) {
         const safeName = file.name.replace(/[^\w.\- ]+/g, "_");
         const path = `${user.id}/${assignmentId}/${Date.now()}-${safeName}`;
-        const { error: uploadError } = await supabase.storage
-          .from("submissions")
-          .upload(path, file, {
-            upsert: true,
-            contentType: file.type || "application/octet-stream",
-          });
-        if (uploadError) {
+        let uploadedOk = false;
+        let lastReason = "unknown error";
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          setProgress(
+            attempt === 1
+              ? `Uploading ${file.name}`
+              : `Connection dropped — retrying ${file.name} (attempt ${attempt} of 3)`
+          );
+          const { error: uploadError } = await supabase.storage
+            .from("submissions")
+            .upload(path, file, {
+              upsert: true,
+              contentType: file.type || "application/octet-stream",
+            });
+          if (!uploadError) {
+            uploadedOk = true;
+            break;
+          }
+          lastReason = (uploadError as { message?: string }).message ?? "unknown error";
+          if (attempt < 3) {
+            await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+          }
+        }
+
+        if (!uploadedOk) {
           setStatus("idle");
-          const reason =
-            (uploadError as { message?: string }).message ?? "unknown error";
+          setProgress(null);
           const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
           setError(
-            `Upload failed for ${file.name} (${sizeMb} MB): ${reason}. Check your connection and try again.`
+            `Upload failed for ${file.name} (${sizeMb} MB): ${lastReason}. Please try again on a stronger connection, or share the file as a link.`
           );
           return;
         }
         uploaded.push({ path, name: file.name });
       }
+      setProgress(null);
     }
 
     setStatus("saving");
@@ -117,7 +148,10 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
       <div>
         <Label>Attachments</Label>
         <Input ref={fileInputRef} name="file" type="file" multiple className="pt-2.5" />
-        <p className="mt-1.5 text-sm text-muted">Attach one or more files.</p>
+        <p className="mt-1.5 text-sm text-muted">
+          Attach one or more files, up to {MAX_FILE_MB} MB each. On a weak signal,
+          use Wi-Fi or paste a link below.
+        </p>
       </div>
 
       <div>
@@ -169,7 +203,9 @@ export function AssignmentSubmit({ assignmentId }: { assignmentId: string }) {
         {busy ? (
           <span className="flex items-center gap-2">
             <Loader2 className="size-4 animate-spin" />
-            {status === "uploading" ? "Uploading files" : "Submitting"}
+            {status === "uploading"
+              ? progress ?? "Uploading files"
+              : "Submitting"}
           </span>
         ) : (
           "Submit work"
